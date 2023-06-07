@@ -1,7 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Celeste.Mod.viddiesToolbox.Menu;
+using FMOD.Studio;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Monocle;
+using MonoMod;
 using System;
+using System.Collections.Generic;
 
 namespace Celeste.Mod.viddiesToolbox {
     public class ViddiesToolboxModule : EverestModule {
@@ -14,10 +18,21 @@ namespace Celeste.Mod.viddiesToolbox {
 
         public ViddiesToolboxModule() {
             Instance = this;
+
+            Logger.SetLogLevel("viddiesToolbox/", LogLevel.Debug);
         }
 
         public override void Load() {
             On.Monocle.Engine.Update += Engine_Update;
+        }
+
+        public override void OnInputInitialize() {
+            base.OnInputInitialize();
+
+            //Register custom bindings
+            foreach (KeyValuePair<string, ButtonBinding> entry in ModSettings.ButtonsConsoleCommands) {
+                InitializeButtonBinding(entry.Value);
+            }
         }
 
         private void Engine_Update(On.Monocle.Engine.orig_Update orig, Engine self, GameTime gameTime) {
@@ -77,15 +92,90 @@ namespace Celeste.Mod.viddiesToolbox {
                     player.MoveH(moveH - 0.5f);
                 }
             }
+            
+            foreach (KeyValuePair<string, ButtonBinding> entry in ModSettings.ButtonsConsoleCommands) {
+                if (entry.Value.Pressed) {
+                    string buttonName = entry.Key;
+                    string consoleCommand = ModSettings.ConsoleCommands[buttonName];
+
+                    if (string.IsNullOrEmpty(consoleCommand)) {
+                        Log($"Console command for button '{buttonName}' was null or empty!");
+                        continue;
+                    }
+                    
+                    try {
+                        //Split first word from the rest of the string
+                        string[] split = consoleCommand.Split(new char[] { ' ' }, 2);
+                        string command = split[0].ToLower();
+                        string[] args = split.Length > 1 ? split[1].Split(' ') : new string[0];
+
+                        Log($"Executing button '{buttonName}' with command '{consoleCommand}' -> '{command}' with args '{string.Join("', '", args)}'");
+                        Engine.Commands.ExecuteCommand(command, args);
+                    } catch (Exception ex) {
+                        Log($"Exception while executing button '{buttonName}' with command '{consoleCommand}': {ex}");
+                    }
+                }
+            }
         }
 
         public override void Unload() {
             On.Monocle.Engine.Update -= Engine_Update;
         }
 
-
         public void Log(string message) {
-            Logger.Log("viddiesToolbox", message);
+            Logger.Log(LogLevel.Debug, "viddiesToolbox/all", message);
+        }
+        
+        protected override void CreateModMenuSectionKeyBindings(TextMenu menu, bool inGame, EventInstance snapshot) {
+            //base.CreateModMenuSectionKeyBindings(menu, inGame, snapshot);
+            menu.Add(new TextMenu.Button(Dialog.Clean("options_keyconfig")).Pressed(delegate {
+                menu.Focused = false;
+                Engine.Scene.Add(CreateCustomKeyboardConfigUI(menu));
+                Engine.Scene.OnEndOfFrame += delegate {
+                    Engine.Scene.Entities.UpdateLists();
+                };
+            }));
+            menu.Add(new TextMenu.Button(Dialog.Clean("options_btnconfig")).Pressed(delegate {
+                menu.Focused = false;
+                Engine.Scene.Add(CreateCustomButtonConfigUI(menu));
+                Engine.Scene.OnEndOfFrame += delegate {
+                    Engine.Scene.Entities.UpdateLists();
+                };
+            }));
+        }
+        private Entity CreateCustomKeyboardConfigUI(TextMenu menu) {
+            return new CustomModuleSettingsKeyboardConfigUI(this) {
+                OnClose = () => menu.Focused = true
+            };
+        }
+        private Entity CreateCustomButtonConfigUI(TextMenu menu) {
+            return new CustomModuleSettingsButtonConfigUI(this) {
+                OnClose = () => menu.Focused = true
+            };
+        }
+
+        
+        
+        public void InitializeButtonBinding(ButtonBinding buttonBinding) {
+            if (buttonBinding == null) return;
+            if (buttonBinding.Button != null) return;
+            if (buttonBinding.Binding == null) return;
+            
+            buttonBinding.Button = new VirtualButton(buttonBinding.Binding, Input.Gamepad, 0.08f, 0.2f);
+            buttonBinding.Button.AutoConsumeBuffer = true;
+        }
+        public void DeregisterButtonBinding(ButtonBinding buttonBinding) {
+            if (buttonBinding == null) return;
+            buttonBinding.Button?.Deregister();
+        }
+
+        public override void OnInputDeregister() {
+            base.OnInputDeregister();
+
+            //Deregister custom bindings
+            foreach (KeyValuePair<string, ButtonBinding> entry in ModSettings.ButtonsConsoleCommands) {
+                DeregisterButtonBinding(entry.Value);
+            }
         }
     }
 }
