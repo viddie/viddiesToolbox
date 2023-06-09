@@ -12,8 +12,9 @@ namespace Celeste.Mod.viddiesToolbox {
     public class ViddiesToolboxModule : EverestModule {
         
         public static ViddiesToolboxModule Instance;
-        public static string FreezeSound   = "event:/ui/game/pause";
-        public static string UnfreezeSound = "event:/ui/game/unpause";
+        public static string FreezeSound   = SFX.ui_game_pause;
+        public static string UnfreezeSound = SFX.ui_game_unpause;
+        public static string FrameAdvanceSound = SFX.ui_main_button_select;
 
         public override Type SettingsType => typeof(ModuleSettings);
         public ModuleSettings ModSettings => (ModuleSettings)this._Settings;
@@ -76,6 +77,7 @@ namespace Celeste.Mod.viddiesToolbox {
                     Engine.FreezeTimer = ModSettings.IgnoreOtherFreezeFramesWhileFrameAdvancing ? 0f : _SavedFreezeTimer;
                     ResetLogOnce();
                     _DidFrameAdvance = true;
+                    Audio.Play(SFX.ui_main_button_select);
                 } else {
                     Engine.FreezeTimer = 9999f;
                 }
