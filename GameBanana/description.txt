@@ -4,4 +4,5 @@ Currently contains the following tools:
 	<li>Keybinds to move the player 1 pixel up/down/left/right</li>
 	<li>Keybind modifier to change the moved distance to 0.1 pixel</li>
 	<li>Keybind modifier to instead set the subpixel position to be lowest/highest possible horizontally/vertically</li>
+	<li>Unlimited arbitrary console commands bindable to buttons</li>
 </ul><br>
