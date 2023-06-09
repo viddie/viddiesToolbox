@@ -1,4 +1,5 @@
-﻿using Celeste.Mod.viddiesToolbox.Menu;
+﻿using Celeste.Mod.viddiesToolbox.Enums;
+using Celeste.Mod.viddiesToolbox.Menu;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -11,10 +12,15 @@ namespace Celeste.Mod.viddiesToolbox {
     public class ViddiesToolboxModule : EverestModule {
         
         public static ViddiesToolboxModule Instance;
-
+        public static string FreezeSound   = "event:/ui/game/pause";
+        public static string UnfreezeSound = "event:/ui/game/unpause";
 
         public override Type SettingsType => typeof(ModuleSettings);
         public ModuleSettings ModSettings => (ModuleSettings)this._Settings;
+
+        private FreezeState EngineFrozenState = FreezeState.Normal;
+        private float _SavedFreezeTimer = float.NaN;
+        private bool _DidFrameAdvance = false;
 
         public ViddiesToolboxModule() {
             Instance = this;
@@ -35,13 +41,60 @@ namespace Celeste.Mod.viddiesToolbox {
             }
         }
 
+        public void EnginePreUpdate() {
+            FreezeState newState = EngineFrozenState;
+            
+            if (ModSettings.ButtonToggleFreezeEngine.Pressed) {
+                if (EngineFrozenState == FreezeState.Normal) {
+                    newState = FreezeState.Frozen;
+                    Log($"Freezing engine | FreezeTimer: {Engine.FreezeTimer}, SavedFreezeTimer: {_SavedFreezeTimer} | DeltaTime: {Engine.DeltaTime}, RawDeltaTime: {Engine.RawDeltaTime}");
+                } else {
+                    newState = FreezeState.Normal;
+                    Log("Unfreezing engine");
+                }
+                Log($"Freeze state check: Current: {EngineFrozenState}, New: {newState}");
+                ResetLogOnce();
+            }
+
+
+            bool doFrameAdvance = ModSettings.ButtonAdvanceFrame.Pressed;
+            if (EngineFrozenState == FreezeState.Normal && newState == FreezeState.Frozen) { //Previously normal, now frozen
+                _SavedFreezeTimer = Engine.FreezeTimer;
+                Engine.FreezeTimer = 9999f;
+                Audio.Play(FreezeSound);
+            } else if (EngineFrozenState == FreezeState.Frozen && newState == FreezeState.Normal) { //Previously frozen, now normal
+                Engine.FreezeTimer = _SavedFreezeTimer;
+                _SavedFreezeTimer = float.NaN;
+                Audio.Play(UnfreezeSound);
+            } else if (EngineFrozenState == FreezeState.Frozen && newState == FreezeState.Frozen) {
+                if (_DidFrameAdvance) {
+                    _SavedFreezeTimer = Engine.FreezeTimer;
+                    _DidFrameAdvance = false;
+                }
+                
+                if (doFrameAdvance) {
+                    Engine.FreezeTimer = ModSettings.IgnoreOtherFreezeFramesWhileFrameAdvancing ? 0f : _SavedFreezeTimer;
+                    ResetLogOnce();
+                    _DidFrameAdvance = true;
+                } else {
+                    Engine.FreezeTimer = 9999f;
+                }
+            }
+
+            LogOnce($"Engine.FreezeTime: {Engine.FreezeTimer}, _SavedFreezeTimer: {_SavedFreezeTimer}");
+
+            EngineFrozenState = newState;
+        }
+
         private void Engine_Update(On.Monocle.Engine.orig_Update orig, Engine self, GameTime gameTime) {
             orig(self, gameTime);
 
             if (!(Engine.Scene is Level)) return;
             Level level = Engine.Scene as Level;
-            Player player = level.Tracker.GetEntity<Player>();
 
+            if (!level.Paused) EnginePreUpdate();
+
+            Player player = level.Tracker.GetEntity<Player>();
             if (player == null) return;
 
             UpdateHotkeyPresses(player);
@@ -125,7 +178,17 @@ namespace Celeste.Mod.viddiesToolbox {
         public void Log(string message) {
             Logger.Log(LogLevel.Debug, "viddiesToolbox/all", message);
         }
-        
+
+        private bool _LoggedOnce = false;
+        public void LogOnce(string message) {
+            if (_LoggedOnce) return;
+            _LoggedOnce = true;
+            Log(message);
+        }
+        public void ResetLogOnce() {
+            _LoggedOnce = false;
+        }
+
         protected override void CreateModMenuSectionKeyBindings(TextMenu menu, bool inGame, EventInstance snapshot) {
             //base.CreateModMenuSectionKeyBindings(menu, inGame, snapshot);
             menu.Add(new TextMenu.Button(Dialog.Clean("options_keyconfig")).Pressed(delegate {

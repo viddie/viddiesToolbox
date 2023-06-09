@@ -11,6 +11,7 @@ namespace Celeste.Mod.viddiesToolbox {
         [SettingIgnore]
         private ViddiesToolboxModule Mod => ViddiesToolboxModule.Instance;
 
+        #region Move Player Keybinds
         [SettingName("Move Player Up")]
         public ButtonBinding ButtonMovePlayerUp { get; set; }
         [SettingName("Move Player Down")]
@@ -25,7 +26,9 @@ namespace Celeste.Mod.viddiesToolbox {
 
         [SettingName("Set Subpixel Modifier")]
         public ButtonBinding ButtonSetSubpixelModifier { get; set; }
+        #endregion
 
+        #region Arbitrary Console Commands
         public Dictionary<string, ButtonBinding> ButtonsConsoleCommands { get; set; } = new Dictionary<string, ButtonBinding>() {
             ["Button 1"] = new ButtonBinding(),
         };
@@ -116,5 +119,12 @@ namespace Celeste.Mod.viddiesToolbox {
 
             menu.Add(subMenu);
         }
+        #endregion
+
+        #region Freeze Engine Keybinds
+        public ButtonBinding ButtonToggleFreezeEngine { get; set; }
+        public ButtonBinding ButtonAdvanceFrame { get; set; }
+        public bool IgnoreOtherFreezeFramesWhileFrameAdvancing { get; set; }
+        #endregion
     }
 }
