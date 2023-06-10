@@ -61,12 +61,14 @@ namespace Celeste.Mod.viddiesToolbox {
             bool doFrameAdvance = ModSettings.ButtonAdvanceFrame.Pressed;
             if (EngineFrozenState == FreezeState.Normal && newState == FreezeState.Frozen) { //Previously normal, now frozen
                 _SavedFreezeTimer = Engine.FreezeTimer;
-                Engine.FreezeTimer = 9999f;
+                Engine.FreezeTimer = 0.01666666f * 1000;
                 Audio.Play(FreezeSound);
+                
             } else if (EngineFrozenState == FreezeState.Frozen && newState == FreezeState.Normal) { //Previously frozen, now normal
                 Engine.FreezeTimer = _SavedFreezeTimer;
                 _SavedFreezeTimer = float.NaN;
                 Audio.Play(UnfreezeSound);
+
             } else if (EngineFrozenState == FreezeState.Frozen && newState == FreezeState.Frozen) {
                 if (_DidFrameAdvance) {
                     _SavedFreezeTimer = Engine.FreezeTimer;
@@ -74,12 +76,12 @@ namespace Celeste.Mod.viddiesToolbox {
                 }
                 
                 if (doFrameAdvance) {
-                    Engine.FreezeTimer = ModSettings.IgnoreOtherFreezeFramesWhileFrameAdvancing ? 0f : _SavedFreezeTimer;
+                    Engine.FreezeTimer = _SavedFreezeTimer;
                     ResetLogOnce();
                     _DidFrameAdvance = true;
                     Audio.Play(SFX.ui_main_button_select);
                 } else {
-                    Engine.FreezeTimer = 9999f;
+                    Engine.FreezeTimer = 0.01666666f * 1000;
                 }
             }
 
@@ -90,11 +92,11 @@ namespace Celeste.Mod.viddiesToolbox {
 
         private void Engine_Update(On.Monocle.Engine.orig_Update orig, Engine self, GameTime gameTime) {
             orig(self, gameTime);
-
+            
             if (!(Engine.Scene is Level)) return;
             Level level = Engine.Scene as Level;
-
             if (!level.Paused) EnginePreUpdate();
+
 
             Player player = level.Tracker.GetEntity<Player>();
             if (player == null) return;

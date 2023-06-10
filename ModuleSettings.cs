@@ -124,7 +124,6 @@ namespace Celeste.Mod.viddiesToolbox {
         #region Freeze Engine Keybinds
         public ButtonBinding ButtonToggleFreezeEngine { get; set; }
         public ButtonBinding ButtonAdvanceFrame { get; set; }
-        public bool IgnoreOtherFreezeFramesWhileFrameAdvancing { get; set; }
         #endregion
     }
 }
