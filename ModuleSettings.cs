@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using Celeste.Mod.viddiesToolbox.Menu;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,20 +13,28 @@ namespace Celeste.Mod.viddiesToolbox {
         private ViddiesToolboxModule Mod => ViddiesToolboxModule.Instance;
 
         #region Move Player Keybinds
-        [SettingName("Move Player Up")]
+        public float MovePlayerModifiedStep { get; set; } = 0.1f;
+
         public ButtonBinding ButtonMovePlayerUp { get; set; }
-        [SettingName("Move Player Down")]
         public ButtonBinding ButtonMovePlayerDown { get; set; }
-        [SettingName("Move Player Left")]
         public ButtonBinding ButtonMovePlayerLeft { get; set; }
-        [SettingName("Move Player Right")]
         public ButtonBinding ButtonMovePlayerRight { get; set; }
 
-        [SettingName("Move 0.1 Subpixel Modifier")]
-        public ButtonBinding ButtonMoveOneTenthPixelModifier { get; set; }
-
-        [SettingName("Set Subpixel Modifier")]
+        public ButtonBinding ButtonMovePlayerModifier { get; set; }
         public ButtonBinding ButtonSetSubpixelModifier { get; set; }
+
+        public bool MovePlayerMenu { get; set; }
+
+        public void CreateMovePlayerMenuEntry(TextMenu menu, bool inGame) {
+            List<float> MoveSteps = new List<float>() {
+                0.2f, 0.1f, 0.05f, 0.01f, 0.005f, 0.001f,
+            };
+            menu.Add(new CustomEnumerableSlider<float>("Player Move Modified Distance", MoveSteps, (v) => v.ToString(), MovePlayerModifiedStep) {
+                OnValueChange = (v) => {
+                    MovePlayerModifiedStep = v;
+                },
+            });
+        }
         #endregion
 
         #region Arbitrary Console Commands

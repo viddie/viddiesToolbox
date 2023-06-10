@@ -115,7 +115,7 @@ namespace Celeste.Mod.viddiesToolbox {
             }
 
             if (!ModSettings.ButtonSetSubpixelModifier.Check) {
-                float distance = ModSettings.ButtonMoveOneTenthPixelModifier.Check ? 0.1f : 1f;
+                float distance = ModSettings.ButtonMovePlayerModifier.Check ? ModSettings.MovePlayerModifiedStep : 1f;
 
                 if (ModSettings.ButtonMovePlayerUp.Pressed) {
                     player.MoveV(-distance);
