@@ -1,8 +1,17 @@
 <h1>viddie's Toolbox</h1>
-Currently contains the following tools:
+Currently contains the following tools:<br>
+<u>v1.0.0</u><br>
 <ul>
 	<li>Keybinds to move the player 1 pixel up/down/left/right</li>
 	<li>Keybind modifier to change the moved distance to 0.1 pixel</li>
 	<li>Keybind modifier to instead set the subpixel position to be lowest/highest possible horizontally/vertically</li>
+</ul>
+<u>v1.0.1</u><br>
+<ul>
 	<li>Unlimited arbitrary console commands bindable to buttons</li>
-</ul><br>
+</ul>
+<u>v1.0.2</u><br>
+<ul>
+	<li>Keybind to freeze/unfreeze the engine</li>
+	<li>Keybind to frame advance while the engine is frozen</li>
+</ul>
