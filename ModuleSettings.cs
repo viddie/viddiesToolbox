@@ -134,5 +134,10 @@ namespace Celeste.Mod.viddiesToolbox {
         public ButtonBinding ButtonToggleFreezeEngine { get; set; }
         public ButtonBinding ButtonAdvanceFrame { get; set; }
         #endregion
+
+        #region Other
+        public bool HotkeysEnabled { get; set; } = true;
+        public ButtonBinding ToggleHotkeys { get; set; }
+        #endregion
     }
 }

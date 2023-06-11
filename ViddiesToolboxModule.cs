@@ -26,7 +26,7 @@ namespace Celeste.Mod.viddiesToolbox {
         public ViddiesToolboxModule() {
             Instance = this;
 
-            Logger.SetLogLevel("viddiesToolbox/", LogLevel.Debug);
+            Logger.SetLogLevel("viddiesToolbox/", LogLevel.Info);
         }
 
         public override void Load() {
@@ -45,7 +45,7 @@ namespace Celeste.Mod.viddiesToolbox {
         public void EnginePreUpdate() {
             FreezeState newState = EngineFrozenState;
             
-            if (ModSettings.ButtonToggleFreezeEngine.Pressed) {
+            if (ModSettings.ButtonToggleFreezeEngine.Pressed && ModSettings.HotkeysEnabled) {
                 if (EngineFrozenState == FreezeState.Normal) {
                     newState = FreezeState.Frozen;
                     Log($"Freezing engine | FreezeTimer: {Engine.FreezeTimer}, SavedFreezeTimer: {_SavedFreezeTimer} | DeltaTime: {Engine.DeltaTime}, RawDeltaTime: {Engine.RawDeltaTime}");
@@ -58,7 +58,7 @@ namespace Celeste.Mod.viddiesToolbox {
             }
 
 
-            bool doFrameAdvance = ModSettings.ButtonAdvanceFrame.Pressed;
+            bool doFrameAdvance = ModSettings.ButtonAdvanceFrame.Pressed && ModSettings.HotkeysEnabled;
             if (EngineFrozenState == FreezeState.Normal && newState == FreezeState.Frozen) { //Previously normal, now frozen
                 _SavedFreezeTimer = Engine.FreezeTimer;
                 Engine.FreezeTimer = 0.01666666f * 1000;
@@ -92,11 +92,15 @@ namespace Celeste.Mod.viddiesToolbox {
 
         private void Engine_Update(On.Monocle.Engine.orig_Update orig, Engine self, GameTime gameTime) {
             orig(self, gameTime);
+
+            if (ModSettings.ToggleHotkeys.Pressed) {
+                ModSettings.HotkeysEnabled = !ModSettings.HotkeysEnabled;
+                Log($"Hotkeys enabled: {ModSettings.HotkeysEnabled}", LogLevel.Info);
+            }
             
             if (!(Engine.Scene is Level)) return;
             Level level = Engine.Scene as Level;
             if (!level.Paused) EnginePreUpdate();
-
 
             Player player = level.Tracker.GetEntity<Player>();
             if (player == null) return;
@@ -106,13 +110,14 @@ namespace Celeste.Mod.viddiesToolbox {
 
         public void UpdateHotkeyPresses(Player player) {
             if (ModSettings == null) {
-                Log($"'ModSettings' was null!");
+                Log($"'ModSettings' was null!", LogLevel.Warn);
                 return;
             }
             if (ModSettings.ButtonMovePlayerUp == null) {
-                Log($"'ButtonMovePlayer1PixelUp' was null!");
+                Log($"'ButtonMovePlayer1PixelUp' was null!", LogLevel.Warn);
                 return;
             }
+            if (!ModSettings.HotkeysEnabled) return;
 
             if (!ModSettings.ButtonSetSubpixelModifier.Check) {
                 float distance = ModSettings.ButtonMovePlayerModifier.Check ? ModSettings.MovePlayerModifiedStep : 1f;
@@ -156,7 +161,7 @@ namespace Celeste.Mod.viddiesToolbox {
                     string consoleCommand = ModSettings.ConsoleCommands[buttonName];
 
                     if (string.IsNullOrEmpty(consoleCommand)) {
-                        Log($"Console command for button '{buttonName}' was null or empty!");
+                        Log($"Console command for button '{buttonName}' was null or empty!", LogLevel.Warn);
                         continue;
                     }
                     
@@ -169,7 +174,7 @@ namespace Celeste.Mod.viddiesToolbox {
                         Log($"Executing button '{buttonName}' with command '{consoleCommand}' -> '{command}' with args '{string.Join("', '", args)}'");
                         Engine.Commands.ExecuteCommand(command, args);
                     } catch (Exception ex) {
-                        Log($"Exception while executing button '{buttonName}' with command '{consoleCommand}': {ex}");
+                        Log($"Exception while executing button '{buttonName}' with command '{consoleCommand}': {ex}", LogLevel.Warn);
                     }
                 }
             }
@@ -179,8 +184,8 @@ namespace Celeste.Mod.viddiesToolbox {
             On.Monocle.Engine.Update -= Engine_Update;
         }
 
-        public void Log(string message) {
-            Logger.Log(LogLevel.Debug, "viddiesToolbox/all", message);
+        public void Log(string message, LogLevel level = LogLevel.Debug) {
+            Logger.Log(level, "viddiesToolbox/all", message);
         }
 
         private bool _LoggedOnce = false;
