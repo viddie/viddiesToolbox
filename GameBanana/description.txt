@@ -15,3 +15,7 @@ Currently contains the following tools:<br>
 	<li>Keybind to freeze/unfreeze the engine</li>
 	<li>Keybind to frame advance while the engine is frozen</li>
 </ul>
+<u>v1.0.3</u><br>
+<ul>
+	<li>Mod Option and Keybind to toggle Hotkeys</li>
+</ul>
