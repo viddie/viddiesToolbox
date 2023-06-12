@@ -6,6 +6,7 @@
     <AssemblyName>viddiesToolbox</AssemblyName>
     <RootNamespace>Celeste.Mod.viddiesToolbox</RootNamespace>
     <LangVersion>7.3</LangVersion>
+    <StrippedLibraries>lib-stripped</StrippedLibraries>
     <CelesteGamePath Condition="'$(CELESTEGAMEPATH)' == ''">..\..</CelesteGamePath>
 	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
@@ -25,6 +26,9 @@
     <Reference Include="Celeste" HintPath="$(CELESTEGAMEPATH)\Celeste.exe" />
     <Reference Include="MMHOOK_Celeste" HintPath="$(CELESTEGAMEPATH)\MMHOOK_Celeste.dll" />
     <Reference Include="YamlDotNet" HintPath="$(CELESTEGAMEPATH)\YamlDotNet.dll" />
+    <Reference Include="$(StrippedLibraries)\SpeedrunTool.SpeedrunTool.dll">
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <Choose>

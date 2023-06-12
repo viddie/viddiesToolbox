@@ -1,5 +1,6 @@
 ﻿using Celeste.Mod.viddiesToolbox.Enums;
 using Celeste.Mod.viddiesToolbox.Menu;
+using Celeste.Mod.viddiesToolbox.ThirdParty;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -7,6 +8,7 @@ using Monocle;
 using MonoMod;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Celeste.Mod.viddiesToolbox {
     public class ViddiesToolboxModule : EverestModule {
@@ -33,6 +35,15 @@ namespace Celeste.Mod.viddiesToolbox {
             On.Monocle.Engine.Update += Engine_Update;
         }
 
+        public override void Initialize() {
+            base.Initialize();
+
+            // load SpeedrunTool if it exists
+            if (Everest.Modules.Any(m => m.Metadata.Name == "SpeedrunTool")) {
+                SpeedrunToolSupport.Load();
+            }
+        }
+
         public override void OnInputInitialize() {
             base.OnInputInitialize();
 
@@ -42,21 +53,26 @@ namespace Celeste.Mod.viddiesToolbox {
             }
         }
 
+        private FreezeState? _TargetFreezeState;
         public void EnginePreUpdate() {
             FreezeState newState = EngineFrozenState;
             
             if (ModSettings.ButtonToggleFreezeEngine.Pressed && ModSettings.HotkeysEnabled) {
                 if (EngineFrozenState == FreezeState.Normal) {
-                    newState = FreezeState.Frozen;
+                    _TargetFreezeState = FreezeState.Frozen;
                     Log($"Freezing engine | FreezeTimer: {Engine.FreezeTimer}, SavedFreezeTimer: {_SavedFreezeTimer} | DeltaTime: {Engine.DeltaTime}, RawDeltaTime: {Engine.RawDeltaTime}");
                 } else {
-                    newState = FreezeState.Normal;
+                    _TargetFreezeState = FreezeState.Normal;
                     Log("Unfreezing engine");
                 }
-                Log($"Freeze state check: Current: {EngineFrozenState}, New: {newState}");
+                Log($"Freeze state check: Current: {EngineFrozenState}, New: {_TargetFreezeState}");
                 ResetLogOnce();
             }
 
+            if (_TargetFreezeState != null) { 
+                newState = _TargetFreezeState.Value;
+                _TargetFreezeState = null;
+            }
 
             bool doFrameAdvance = ModSettings.ButtonAdvanceFrame.Pressed && ModSettings.HotkeysEnabled;
             if (EngineFrozenState == FreezeState.Normal && newState == FreezeState.Frozen) { //Previously normal, now frozen
@@ -184,6 +200,7 @@ namespace Celeste.Mod.viddiesToolbox {
             On.Monocle.Engine.Update -= Engine_Update;
         }
 
+        #region Log Stuff
         public void Log(string message, LogLevel level = LogLevel.Debug) {
             Logger.Log(level, "viddiesToolbox/all", message);
         }
@@ -197,7 +214,9 @@ namespace Celeste.Mod.viddiesToolbox {
         public void ResetLogOnce() {
             _LoggedOnce = false;
         }
+        #endregion
 
+        #region Mod Menu Section Stuff
         protected override void CreateModMenuSectionKeyBindings(TextMenu menu, bool inGame, EventInstance snapshot) {
             //base.CreateModMenuSectionKeyBindings(menu, inGame, snapshot);
             menu.Add(new TextMenu.Button(Dialog.Clean("options_keyconfig")).Pressed(delegate {
@@ -225,9 +244,9 @@ namespace Celeste.Mod.viddiesToolbox {
                 OnClose = () => menu.Focused = true
             };
         }
+        #endregion
 
-        
-        
+        #region Button Binding Stuff
         public void InitializeButtonBinding(ButtonBinding buttonBinding) {
             if (buttonBinding == null) return;
             if (buttonBinding.Button != null) return;
@@ -249,5 +268,20 @@ namespace Celeste.Mod.viddiesToolbox {
                 DeregisterButtonBinding(entry.Value);
             }
         }
+        #endregion
+
+        #region Speedrun Tool Support
+        public void SpeedrunToolSaveState(Dictionary<Type, Dictionary<string, object>> savedvalues, Level level) {
+            Log($"SaveState set", LogLevel.Debug);
+            _TargetFreezeState = FreezeState.Normal;
+        }
+
+        public void SpeedrunToolLoadState(Dictionary<Type, Dictionary<string, object>> savedvalues, Level level) {
+            Log($"SaveState loaded", LogLevel.Debug);
+            _TargetFreezeState = FreezeState.Normal;
+        }
+
+        public void SpeedrunToolClearState() {}
+        #endregion
     }
 }
