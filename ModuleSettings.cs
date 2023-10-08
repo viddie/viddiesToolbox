@@ -135,6 +135,10 @@ namespace Celeste.Mod.viddiesToolbox {
         public ButtonBinding ButtonAdvanceFrame { get; set; }
         #endregion
 
+        #region Map Timer
+        public bool EnableMapTimer { get; set; } = false;
+        #endregion
+
         #region Other
         public bool HotkeysEnabled { get; set; } = true;
         public ButtonBinding ToggleHotkeys { get; set; }

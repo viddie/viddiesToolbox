@@ -33,6 +33,11 @@ namespace Celeste.Mod.viddiesToolbox {
 
         public override void Load() {
             On.Monocle.Engine.Update += Engine_Update;
+            On.Celeste.SpeedrunTimerDisplay.DrawTime += SpeedrunTimerDisplay_DrawTime;
+        }
+        public override void Unload() {
+            On.Monocle.Engine.Update -= Engine_Update;
+            On.Celeste.SpeedrunTimerDisplay.DrawTime -= SpeedrunTimerDisplay_DrawTime;
         }
 
         public override void Initialize() {
@@ -196,8 +201,30 @@ namespace Celeste.Mod.viddiesToolbox {
             }
         }
 
-        public override void Unload() {
-            On.Monocle.Engine.Update -= Engine_Update;
+
+        private void SpeedrunTimerDisplay_DrawTime(On.Celeste.SpeedrunTimerDisplay.orig_DrawTime orig, Vector2 position, string timeString, float scale, bool valid, bool finished, bool bestTime, float alpha) {
+            if (!ModSettings.EnableMapTimer) {
+                orig(position, timeString, scale, valid, finished, bestTime, alpha);
+                return;
+            }
+            
+            TimeSpan timeSpan = TimeSpan.FromTicks(SaveData.Instance.Time);
+            int num = (int)timeSpan.TotalHours;
+            string fileString = num + timeSpan.ToString("\\:mm\\:ss\\.fff");
+
+            
+            if (timeString == fileString) { //If we look at the file time, replace it with map time
+                try {
+                    AreaKey area = SaveData.Instance.CurrentSession.Area;
+                    AreaStats areaStats = SaveData.Instance.Areas_Safe[area.SIDID];
+                    long time = areaStats.Modes[(int)area.Mode].TimePlayed;
+                    TimeSpan timeSpan2 = TimeSpan.FromTicks(time);
+                    int num2 = (int)timeSpan2.TotalHours;
+                    timeString = num2 + timeSpan2.ToString("\\:mm\\:ss\\.fff");
+                } catch (Exception) {}
+            }
+
+            orig(position, timeString, scale, valid, finished, bestTime, alpha);
         }
 
         #region Log Stuff
