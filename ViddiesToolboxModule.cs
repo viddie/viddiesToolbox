@@ -202,6 +202,7 @@ namespace Celeste.Mod.viddiesToolbox {
         }
 
 
+        int logCounter = 0;
         private void SpeedrunTimerDisplay_DrawTime(On.Celeste.SpeedrunTimerDisplay.orig_DrawTime orig, Vector2 position, string timeString, float scale, bool valid, bool finished, bool bestTime, float alpha) {
             if (!ModSettings.EnableMapTimer) {
                 orig(position, timeString, scale, valid, finished, bestTime, alpha);
@@ -216,12 +217,19 @@ namespace Celeste.Mod.viddiesToolbox {
             if (timeString == fileString) { //If we look at the file time, replace it with map time
                 try {
                     AreaKey area = SaveData.Instance.CurrentSession.Area;
-                    AreaStats areaStats = SaveData.Instance.Areas_Safe[area.SIDID];
+                    AreaStats areaStats = SaveData.Instance.Areas_Safe[area.ID];
                     long time = areaStats.Modes[(int)area.Mode].TimePlayed;
                     TimeSpan timeSpan2 = TimeSpan.FromTicks(time);
                     int num2 = (int)timeSpan2.TotalHours;
                     timeString = num2 + timeSpan2.ToString("\\:mm\\:ss\\.fff");
-                } catch (Exception) {}
+
+                } catch (Exception ex) {
+                    logCounter++;
+                    if (logCounter > 300) {
+                        logCounter = 0;
+                        Logger.LogDetailed(ex, "viddiesToolbox");
+                    }
+                }
             }
 
             orig(position, timeString, scale, valid, finished, bestTime, alpha);
@@ -229,7 +237,7 @@ namespace Celeste.Mod.viddiesToolbox {
 
         #region Log Stuff
         public void Log(string message, LogLevel level = LogLevel.Debug) {
-            Logger.Log(level, "viddiesToolbox/all", message);
+            Logger.Log(level, "viddiesToolbox", message);
         }
 
         private bool _LoggedOnce = false;
