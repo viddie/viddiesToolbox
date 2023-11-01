@@ -1,4 +1,5 @@
-﻿using Celeste.Mod.viddiesToolbox.Enums;
+﻿using Celeste.Mod.viddiesToolbox.Entities;
+using Celeste.Mod.viddiesToolbox.Enums;
 using Celeste.Mod.viddiesToolbox.Menu;
 using Celeste.Mod.viddiesToolbox.ThirdParty;
 using FMOD.Studio;
@@ -34,7 +35,9 @@ namespace Celeste.Mod.viddiesToolbox {
         public override void Load() {
             On.Monocle.Engine.Update += Engine_Update;
             On.Celeste.SpeedrunTimerDisplay.DrawTime += SpeedrunTimerDisplay_DrawTime;
+            On.Celeste.Level.LoadLevel += Level_LoadLevel;
         }
+
         public override void Unload() {
             On.Monocle.Engine.Update -= Engine_Update;
             On.Celeste.SpeedrunTimerDisplay.DrawTime -= SpeedrunTimerDisplay_DrawTime;
@@ -57,6 +60,8 @@ namespace Celeste.Mod.viddiesToolbox {
                 InitializeButtonBinding(entry.Value);
             }
         }
+
+        #region Hooks
 
         private FreezeState? _TargetFreezeState;
         public void EnginePreUpdate() {
@@ -234,6 +239,18 @@ namespace Celeste.Mod.viddiesToolbox {
 
             orig(position, timeString, scale, valid, finished, bestTime, alpha);
         }
+        
+        private void Level_LoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerIntro, bool isFromLoader) {
+            orig(self, playerIntro, isFromLoader);
+
+            Logger.Log(LogLevel.Info, "viddiesToolbox", $"Level.LoadLevel: {self.Session.Level}");
+
+            //if (isFromLoader) {
+                self.Add(new LineupIndicatorEntity());
+            //}
+        }
+        
+        #endregion
 
         #region Log Stuff
         public void Log(string message, LogLevel level = LogLevel.Debug) {

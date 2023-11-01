@@ -139,6 +139,24 @@ namespace Celeste.Mod.viddiesToolbox {
         public bool EnableMapTimer { get; set; } = false;
         #endregion
 
+        #region Lineup Helper
+        public bool DemoLineupEnabled { get; set; } = false;
+        public string DemoLineupSelectedTech { get; set; } = "Full Jump";
+        public void CreateDemoLineupSelectedTechEntry(TextMenu menu, bool inGame) {
+            List<string> techList = new List<string>() {
+                "Full Jump",
+                "Up Dash Buffer", "Up-Diagonal Dash Buffer", "Down Dash Buffer", "Down-Diagonal Dash Buffer", "Horizontal Dash Buffer",
+                "Max Height Hyper",
+            };
+            menu.Add(new TextMenuExt.EnumerableSlider<string>("Tech", techList, DemoLineupSelectedTech) {
+                OnValueChange = (v) => {
+                    DemoLineupSelectedTech = v;
+                },
+            });
+        }
+        public ButtonBinding ButtonDemoLineupNextTech { get; set; }
+        #endregion
+
         #region Other
         public bool HotkeysEnabled { get; set; } = true;
         public ButtonBinding ToggleHotkeys { get; set; }
