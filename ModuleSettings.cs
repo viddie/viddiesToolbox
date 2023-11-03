@@ -37,6 +37,43 @@ namespace Celeste.Mod.viddiesToolbox {
         }
         #endregion
 
+        #region Freeze Engine Keybinds
+        public ButtonBinding ButtonToggleFreezeEngine { get; set; }
+        public ButtonBinding ButtonAdvanceFrame { get; set; }
+        #endregion
+
+        #region Map Timer
+        public bool EnableMapTimer { get; set; } = false;
+        #endregion
+
+        #region Lineup Helper
+        [SettingIgnore]
+        public bool DemoLineupEnabled { get; set; } = false;
+        [SettingIgnore]
+        public string DemoLineupSelectedTech { get; set; } = "Full Jump";
+        public ButtonBinding ButtonDemoLineupNextTech { get; set; }
+        #endregion
+
+        #region Analog Direction Fixer
+        public bool AnalogUseDashDirectionsForMovement { get; set; } = false;
+        public void CreateAnalogUseDashDirectionsForMovementEntry(TextMenu menu, bool inGame) {
+            menu.Add(new TextMenu.OnOff("Analog: Use Dash Directions For Moving", AnalogUseDashDirectionsForMovement) {
+                OnValueChange = v => {
+                    AnalogUseDashDirectionsForMovement = v;
+                    ViddiesToolboxModule.Instance.SetAnalogMoveDirectionsEnabled(v);
+                }
+            });
+        }
+
+        [SettingIgnore]
+        public bool AnalogUseMoveDirectionsForDashing { get; set; } = false;
+        #endregion
+
+        #region Hotkeys
+        public bool HotkeysEnabled { get; set; } = true;
+        public ButtonBinding ToggleHotkeys { get; set; }
+        #endregion
+
         #region Arbitrary Console Commands
         public Dictionary<string, ButtonBinding> ButtonsConsoleCommands { get; set; } = new Dictionary<string, ButtonBinding>() {
             ["Button 1"] = new ButtonBinding(),
@@ -51,8 +88,8 @@ namespace Celeste.Mod.viddiesToolbox {
             TextMenuExt.SubMenu subMenu = new TextMenuExt.SubMenu("Bindable Console Commands", false);
 
             TextMenuExt.EnumerableSlider<string> sliderSelectedCommand = new TextMenuExt.EnumerableSlider<string>("Selected Command", ButtonsConsoleCommands.Keys, ConsoleCommandSelected);
-            TextMenu.SubHeader headerButtonCommand = new TextMenu.SubHeader($"Command: {ConsoleCommands[ConsoleCommandSelected]}", topPadding:false);
-            
+            TextMenu.SubHeader headerButtonCommand = new TextMenu.SubHeader($"Command: {ConsoleCommands[ConsoleCommandSelected]}", topPadding: false);
+
             TextMenu.Button buttonAddCommand = new TextMenu.Button("Add New Command");
             TextMenu.Button buttonDeleteCommand = new TextMenu.Button("Delete Selected Command");
             TextMenu.Button buttonImportButtonName = new TextMenu.Button("Import Command Name from Clipboard");
@@ -67,7 +104,7 @@ namespace Celeste.Mod.viddiesToolbox {
                 string newButtonName = "Button " + (ButtonsConsoleCommands.Count + 1);
                 ButtonsConsoleCommands.Add(newButtonName, new ButtonBinding());
                 ConsoleCommands.Add(newButtonName, "");
-                
+
                 sliderSelectedCommand.Values.Add(Tuple.Create(newButtonName, newButtonName));
                 sliderSelectedCommand.SelectWiggler.Start();
 
@@ -104,7 +141,7 @@ namespace Celeste.Mod.viddiesToolbox {
                 ConsoleCommandSelected = text;
 
                 //Modify slider
-                sliderSelectedCommand.Values.Insert(sliderSelectedCommand.Index+1, Tuple.Create(text, text));
+                sliderSelectedCommand.Values.Insert(sliderSelectedCommand.Index + 1, Tuple.Create(text, text));
                 sliderSelectedCommand.Values.RemoveAt(sliderSelectedCommand.Index);
                 sliderSelectedCommand.SelectWiggler.Start();
             };
@@ -112,15 +149,15 @@ namespace Celeste.Mod.viddiesToolbox {
             buttonImportCommand.OnPressed = () => {
                 string text = TextInput.GetClipboardText();
                 if (string.IsNullOrEmpty(text)) return;
-                
+
                 ConsoleCommands[ConsoleCommandSelected] = text;
                 headerButtonCommand.Title = $"Command: {text}";
             };
 
-            
+
             subMenu.Add(sliderSelectedCommand);
             subMenu.Add(headerButtonCommand);
-            
+
             subMenu.Add(buttonAddCommand);
             subMenu.Add(buttonDeleteCommand);
             subMenu.Add(buttonImportButtonName);
@@ -129,51 +166,38 @@ namespace Celeste.Mod.viddiesToolbox {
             menu.Add(subMenu);
         }
         #endregion
+        
+        #region Other
+        public bool OtherOptions { get; set; }
+        public void CreateOtherOptionsEntry(TextMenu menu, bool inGame) {
+            TextMenuExt.SubMenu subMenu = new TextMenuExt.SubMenu("Other", false);
 
-        #region Freeze Engine Keybinds
-        public ButtonBinding ButtonToggleFreezeEngine { get; set; }
-        public ButtonBinding ButtonAdvanceFrame { get; set; }
-        #endregion
+            //Analog directions
+            subMenu.Add(new TextMenu.OnOff("Analog: Use Move Directions For Dashing", AnalogUseMoveDirectionsForDashing) {
+                OnValueChange = v => {
+                    AnalogUseMoveDirectionsForDashing = v;
+                }
+            });
 
-        #region Map Timer
-        public bool EnableMapTimer { get; set; } = false;
-        #endregion
-
-        #region Lineup Helper
-        public bool DemoLineupEnabled { get; set; } = false;
-        public string DemoLineupSelectedTech { get; set; } = "Full Jump";
-        public void CreateDemoLineupSelectedTechEntry(TextMenu menu, bool inGame) {
+            //Demo lineup helper
+            subMenu.Add(new TextMenu.OnOff("Demo Lineup Enabled", DemoLineupEnabled) {
+                OnValueChange = v => {
+                    DemoLineupEnabled = v;
+                }
+            });
             List<string> techList = new List<string>() {
                 "Full Jump",
                 "Up Dash Buffer", "Up-Diagonal Dash Buffer", "Down Dash Buffer", "Down-Diagonal Dash Buffer", "Horizontal Dash Buffer",
                 "Max Height Hyper",
             };
-            menu.Add(new TextMenuExt.EnumerableSlider<string>("Tech", techList, DemoLineupSelectedTech) {
+            subMenu.Add(new TextMenuExt.EnumerableSlider<string>("Demo Lineup Tech", techList, DemoLineupSelectedTech) {
                 OnValueChange = (v) => {
                     DemoLineupSelectedTech = v;
                 },
             });
-        }
-        public ButtonBinding ButtonDemoLineupNextTech { get; set; }
-        #endregion
 
-        #region Analog Direction Fixer
-        public bool AnalogUseDashDirectionsForMovement { get; set; } = false;
-        public void CreateAnalogUseDashDirectionsForMovement(TextMenu menu, bool inGame) {
-            menu.Add(new TextMenu.OnOff("Analog Use Move Directions For Dashing", AnalogUseDashDirectionsForMovement) {
-                OnValueChange = v => {
-                    AnalogUseDashDirectionsForMovement = v;
-                    ViddiesToolboxModule.Instance.SetAnalogMoveDirectionsEnabled(v);
-                }
-            });
+            menu.Add(subMenu);
         }
-        
-        public bool AnalogUseMoveDirectionsForDashing { get; set; } = false;
-        #endregion
-
-        #region Other
-        public bool HotkeysEnabled { get; set; } = true;
-        public ButtonBinding ToggleHotkeys { get; set; }
         #endregion
     }
 }

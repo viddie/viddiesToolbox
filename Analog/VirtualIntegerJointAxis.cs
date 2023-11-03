@@ -13,8 +13,6 @@ namespace Celeste.Mod.viddiesToolbox.Analog {
         public VirtualIntegerJointAxis Other { get; set; }
         public AxisType Type { get; private set; }
 
-        private bool turned;
-
 
         public VirtualIntegerJointAxis(AxisType type, Binding negative, Binding negativeAlt, Binding positive, Binding positiveAlt, int gamepadIndex, float threshold, OverlapBehaviors overlapBehavior = OverlapBehaviors.TakeNewer) : base(negative, negativeAlt, positive, positiveAlt, gamepadIndex, threshold, overlapBehavior) {
             Type = type;
@@ -62,7 +60,6 @@ namespace Celeste.Mod.viddiesToolbox.Analog {
                 y = thisValue;
             }
 
-
             float num = new Vector2(x, y).Angle();
             int num2 = ((num < 0f) ? 1 : 0);
             float num3 = (float)Math.PI / 8f - (float)num2 * 0.08726646f;
@@ -88,37 +85,6 @@ namespace Celeste.Mod.viddiesToolbox.Analog {
             } else {
                 Value = (int)result.Y;
             }
-
-
-
-            //bool flag = Positive.Axis(GamepadIndex, Threshold) > 0f || (PositiveAlt != null && PositiveAlt.Axis(GamepadIndex, Threshold) > 0f);
-            //bool flag2 = Negative.Axis(GamepadIndex, Threshold) > 0f || (NegativeAlt != null && NegativeAlt.Axis(GamepadIndex, Threshold) > 0f);
-            //if (flag && flag2) {
-            //    switch (OverlapBehavior) {
-            //        case OverlapBehaviors.CancelOut:
-            //            Value = 0;
-            //            break;
-            //        case OverlapBehaviors.TakeNewer:
-            //            if (!turned) {
-            //                Value *= -1;
-            //                turned = true;
-            //            }
-
-            //            break;
-            //        case OverlapBehaviors.TakeOlder:
-            //            Value = PreviousValue;
-            //            break;
-            //    }
-            //} else if (flag) {
-            //    turned = false;
-            //    Value = 1;
-            //} else if (flag2) {
-            //    turned = false;
-            //    Value = -1;
-            //} else {
-            //    turned = false;
-            //    Value = 0;
-            //}
 
             if (Inverted) {
                 Value = -Value;
