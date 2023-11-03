@@ -157,6 +157,20 @@ namespace Celeste.Mod.viddiesToolbox {
         public ButtonBinding ButtonDemoLineupNextTech { get; set; }
         #endregion
 
+        #region Analog Direction Fixer
+        public bool AnalogUseDashDirectionsForMovement { get; set; } = false;
+        public void CreateAnalogUseDashDirectionsForMovement(TextMenu menu, bool inGame) {
+            menu.Add(new TextMenu.OnOff("Analog Use Move Directions For Dashing", AnalogUseDashDirectionsForMovement) {
+                OnValueChange = v => {
+                    AnalogUseDashDirectionsForMovement = v;
+                    ViddiesToolboxModule.Instance.SetAnalogMoveDirectionsEnabled(v);
+                }
+            });
+        }
+        
+        public bool AnalogUseMoveDirectionsForDashing { get; set; } = false;
+        #endregion
+
         #region Other
         public bool HotkeysEnabled { get; set; } = true;
         public ButtonBinding ToggleHotkeys { get; set; }

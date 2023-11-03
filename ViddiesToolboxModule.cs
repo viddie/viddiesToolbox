@@ -1,4 +1,5 @@
-﻿using Celeste.Mod.viddiesToolbox.Entities;
+﻿using Celeste.Mod.viddiesToolbox.Analog;
+using Celeste.Mod.viddiesToolbox.Entities;
 using Celeste.Mod.viddiesToolbox.Enums;
 using Celeste.Mod.viddiesToolbox.Menu;
 using Celeste.Mod.viddiesToolbox.ThirdParty;
@@ -36,6 +37,8 @@ namespace Celeste.Mod.viddiesToolbox {
             On.Monocle.Engine.Update += Engine_Update;
             On.Celeste.SpeedrunTimerDisplay.DrawTime += SpeedrunTimerDisplay_DrawTime;
             On.Celeste.Level.LoadLevel += Level_LoadLevel;
+
+            On.Celeste.Input.GetAimVector += Input_GetAimVector;
         }
 
         public override void Unload() {
@@ -45,6 +48,10 @@ namespace Celeste.Mod.viddiesToolbox {
 
         public override void Initialize() {
             base.Initialize();
+
+            if (ModSettings.AnalogUseDashDirectionsForMovement) {
+                LoadAnalogMoveDirections();
+            }
 
             // load SpeedrunTool if it exists
             if (Everest.Modules.Any(m => m.Metadata.Name == "SpeedrunTool")) {
@@ -249,7 +256,60 @@ namespace Celeste.Mod.viddiesToolbox {
                 self.Add(new LineupIndicatorEntity());
             //}
         }
+
+        private Vector2 Input_GetAimVector(On.Celeste.Input.orig_GetAimVector orig, Facings defaultFacing) {
+            if (!ModSettings.AnalogUseMoveDirectionsForDashing) {
+                return orig(defaultFacing);
+            }
+
+            Vector2 value = Input.Aim.Value;
+            if (value == Vector2.Zero) {
+                if (SaveData.Instance != null && SaveData.Instance.Assists.DashAssist) {
+                    return Input.LastAim;
+                }
+
+                Input.LastAim = Vector2.UnitX * (float)defaultFacing;
+            } else if (SaveData.Instance != null && SaveData.Instance.Assists.ThreeSixtyDashing) {
+                Input.LastAim = value.SafeNormalize();
+            } else {
+                int x = Math.Abs(value.X) > 0.3 ? Math.Sign(value.X) : 0;
+                int y = Math.Abs(value.Y) > 0.7 ? Math.Sign(value.Y) : 0;
+                Input.LastAim = new Vector2(x, y).SafeNormalize();
+            }
+
+            return Input.LastAim;
+        }
+        #endregion
+
+        #region Analog Direction Stuff
+        public void SetAnalogMoveDirectionsEnabled(bool enabled) {
+            if (enabled) {
+                LoadAnalogMoveDirections();
+            } else {
+                UnloadAnalogMoveDirections();
+            }
+        }
         
+        private void LoadAnalogMoveDirections() {
+            Log($"Injecting analog move direction override...");
+
+            VirtualIntegerJointAxis moveX = new VirtualIntegerJointAxis(VirtualIntegerJointAxis.AxisType.X, Settings.Instance.Left, Settings.Instance.LeftMoveOnly, Settings.Instance.Right, Settings.Instance.RightMoveOnly, Input.Gamepad, 0.3f);
+            VirtualIntegerJointAxis moveY = new VirtualIntegerJointAxis(VirtualIntegerJointAxis.AxisType.Y, Settings.Instance.Up, Settings.Instance.UpMoveOnly, Settings.Instance.Down, Settings.Instance.DownMoveOnly, Input.Gamepad, 0.3f);
+            moveX.Other = moveY;
+            moveY.Other = moveX;
+
+            Input.MoveX = moveX;
+            Input.MoveY = moveY;
+            Input.GliderMoveY = moveY;
+        }
+
+        private void UnloadAnalogMoveDirections() {
+            Log($"Removing analog move direction override...");
+            
+            Input.MoveX = new VirtualIntegerAxis(Settings.Instance.Left, Settings.Instance.LeftMoveOnly, Settings.Instance.Right, Settings.Instance.RightMoveOnly, Input.Gamepad, 0.3f);
+            Input.MoveY = new VirtualIntegerAxis(Settings.Instance.Up, Settings.Instance.UpMoveOnly, Settings.Instance.Down, Settings.Instance.DownMoveOnly, Input.Gamepad, 0.7f);
+            Input.GliderMoveY = new VirtualIntegerAxis(Settings.Instance.Up, Settings.Instance.UpMoveOnly, Settings.Instance.Down, Settings.Instance.DownMoveOnly, Input.Gamepad, 0.3f);
+        }
         #endregion
 
         #region Log Stuff
