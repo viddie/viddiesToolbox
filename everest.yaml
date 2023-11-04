@@ -1,5 +1,5 @@
 ﻿- Name: viddiesToolbox
-  Version: 1.0.5
+  Version: 1.1.0
   DLL: bin/viddiesToolbox.dll
   Dependencies:
     - Name: Everest
