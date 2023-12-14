@@ -249,19 +249,14 @@ namespace Celeste.Mod.viddiesToolbox {
         
         private void Level_LoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerIntro, bool isFromLoader) {
             orig(self, playerIntro, isFromLoader);
-
-            Logger.Log(LogLevel.Info, "viddiesToolbox", $"Level.LoadLevel: {self.Session.Level}");
-
-            //if (isFromLoader) {
-                self.Add(new LineupIndicatorEntity());
-            //}
+            self.Add(new LineupIndicatorEntity());
         }
 
         private Vector2 Input_GetAimVector(On.Celeste.Input.orig_GetAimVector orig, Facings defaultFacing) {
             if (!ModSettings.AnalogUseMoveDirectionsForDashing) {
                 return orig(defaultFacing);
             }
-
+            
             Vector2 value = Input.Aim.Value;
             if (value == Vector2.Zero) {
                 if (SaveData.Instance != null && SaveData.Instance.Assists.DashAssist) {
@@ -276,7 +271,7 @@ namespace Celeste.Mod.viddiesToolbox {
                 int y = Math.Abs(value.Y) > 0.7 ? Math.Sign(value.Y) : 0;
                 Input.LastAim = new Vector2(x, y).SafeNormalize();
             }
-
+       
             return Input.LastAim;
         }
         #endregion
