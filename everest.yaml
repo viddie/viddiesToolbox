@@ -1,5 +1,5 @@
 ﻿- Name: viddiesToolbox
-  Version: 1.1.0
+  Version: 1.1.1
   DLL: bin/viddiesToolbox.dll
   Dependencies:
     - Name: Everest
@@ -7,3 +7,5 @@
   OptionalDependencies:
     - Name: SpeedrunTool
       Version: 3.10.1
+    - Name: ConsistencyTracker
+      Version: 2.5.1

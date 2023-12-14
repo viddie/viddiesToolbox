@@ -44,6 +44,7 @@ namespace Celeste.Mod.viddiesToolbox {
 
         #region Map Timer
         public bool EnableMapTimer { get; set; } = false;
+        public bool EnableRoomTimer { get; set; } = false;
         #endregion
 
         #region Lineup Helper

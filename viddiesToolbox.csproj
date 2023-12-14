@@ -29,6 +29,9 @@
     <Reference Include="$(StrippedLibraries)\SpeedrunTool.SpeedrunTool.dll">
       <Private>false</Private>
     </Reference>
+    <Reference Include="$(StrippedLibraries)\ConsistencyTracker.dll">
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <Choose>
