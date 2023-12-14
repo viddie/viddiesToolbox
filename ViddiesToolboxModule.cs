@@ -66,18 +66,6 @@ namespace Celeste.Mod.viddiesToolbox {
 
             if (Everest.Modules.Any(m => m.Metadata.Name == "ConsistencyTracker")) {
                 ConsistencyTrackerLoaded = true;
-                ConsistencyTracker.Events.Events.OnAfterSavingStats += Events_OnAfterSavingStats;
-            }
-        }
-
-        private void Events_OnAfterSavingStats() {
-            Log($"CCT optional dependency loaded and fired OnAfterSavingStats event", LogLevel.Info);
-            ConsistencyTrackerModule cct = ConsistencyTrackerModule.Instance;
-            RoomStats rStats = cct.CurrentChapterStats.CurrentRoom;
-            if (rStats == null) {
-                Log($"Current room according to CCT was null", LogLevel.Info);
-            } else {
-                Log($"Current room according to CCT: {rStats.DebugRoomName}", LogLevel.Info);
             }
         }
 
