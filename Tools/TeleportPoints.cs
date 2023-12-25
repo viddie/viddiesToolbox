@@ -1,9 +1,11 @@
-﻿using FMOD;
+﻿using Celeste.Mod.viddiesToolbox.Entities;
+using FMOD;
 using Microsoft.Xna.Framework;
 using Monocle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,7 +16,8 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
         private static ModuleSettings Settings => Mod.ModSettings;
 
         private Vector2 _ApplyRemainder = Vector2.Zero;
-
+        private int _ApplyRemainderIndex = -1;
+        
         
         public TeleportPoints() {}
 
@@ -31,11 +34,14 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
         private void Level_Update(On.Celeste.Level.orig_Update orig, Level self) {
             orig(self);
 
+            if (_ApplyRemainderIndex != -1) {
+                Tooltip.Show($"Teleported to point {_ApplyRemainderIndex + 1}", 1.3f);
+                _ApplyRemainderIndex = -1;
+            }
+
             for (int i = 0; i < Settings.ButtonsTeleportPoint.Count; i++) {
                 if (!Settings.ButtonsTeleportPoint[i].Pressed) continue;
                 if (Settings.TeleportPointsPositions.Count <= i) continue;
-
-                Mod.Log($"Pressed teleport button {i}", LogLevel.Info);
 
                 bool holdingModifier = Settings.TeleportPointClearModifier.Check; //See if modifier is being held
                 bool pointIsEmpty = Settings.TeleportPointsPositions[i] == Vector2.Zero && Settings.TeleportPointsRemainders[i] == Vector2.Zero;
@@ -72,12 +78,16 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
             Settings.TeleportPointsPositions[index] = position;
             Settings.TeleportPointsRemainders[index] = remainder;
             Settings.TeleportPointsLevelNames[index] = session.Level;
+            Mod.SaveSettings();
             Mod.Log($"Set teleport point {index} to position: {position} remainder {remainder}", LogLevel.Info);
+            Tooltip.Show($"Saved teleport {index + 1}");
         }
         public void ClearTeleportPoint(int index) {
             Settings.TeleportPointsPositions[index] = Vector2.Zero;
             Settings.TeleportPointsRemainders[index] = Vector2.Zero;
+            Mod.SaveSettings();
             Mod.Log($"Cleared teleport point {index}", LogLevel.Info);
+            Tooltip.Show($"Cleared teleport {index + 1}");
         }
         public void UseTeleportPoint(Player player, Session session, int index) {
             Vector2 position = Settings.TeleportPointsPositions[index];
@@ -88,6 +98,7 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
 
             if (session.MapData.Levels.FirstOrDefault((LevelData lvl) => lvl.Name == levelName) == null) {
                 Mod.Log($"Teleport Point {index}: Level '{levelName}' wasn't found in the current chapter", LogLevel.Info);
+                Tooltip.Show($"Level '{levelName}' wasn't found");
                 return;
             }
  
@@ -99,10 +110,12 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
                 Engine.Scene.Paused = true;
                 Engine.Scene = new LevelLoader(session, position);
                 _ApplyRemainder = remainder;
+                _ApplyRemainderIndex = index;
             } else {
                 ApplyRemainder(player, remainder);
             }
 
+            Tooltip.Show($"Teleported to point {index + 1}");
             Mod.Log($"Teleport Point {index}: Teleported player to position: {position} remainder {remainder}", LogLevel.Info);
         }
 
