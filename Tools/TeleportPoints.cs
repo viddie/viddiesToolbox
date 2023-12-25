@@ -43,7 +43,7 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
                 if (!Settings.ButtonsTeleportPoint[i].Pressed) continue;
                 if (Settings.TeleportPointsPositions.Count <= i) continue;
 
-                bool holdingModifier = Settings.TeleportPointClearModifier.Check; //See if modifier is being held
+                bool holdingModifier = Settings.TeleportPointClearModifier.Check;
                 bool pointIsEmpty = Settings.TeleportPointsPositions[i] == Vector2.Zero && Settings.TeleportPointsRemainders[i] == Vector2.Zero;
 
                 if (holdingModifier) {
