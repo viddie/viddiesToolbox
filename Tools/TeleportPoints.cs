@@ -36,6 +36,10 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
 
             if (_ApplyRemainderIndex != -1) {
                 Tooltip.Show($"Teleported to point {_ApplyRemainderIndex + 1}", 1.3f);
+
+                if (!Settings.SetRespawnPointOnTeleport) {
+                    self.Session.RespawnPoint = null; //Set respawn to closest respawn point in the room
+                }
                 _ApplyRemainderIndex = -1;
             }
 
@@ -101,8 +105,12 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
                 Tooltip.Show($"Level '{levelName}' wasn't found");
                 return;
             }
- 
-            session.RespawnPoint = position;
+
+            //Set respawn point either if the player wants to OR if its a different screen that has to be loaded first
+            if (Settings.SetRespawnPointOnTeleport || !isSameLevel) { 
+                session.RespawnPoint = position;
+            }
+            
             player.Position = position;
 
             if (!isSameLevel) {

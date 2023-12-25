@@ -101,7 +101,8 @@ namespace Celeste.Mod.viddiesToolbox {
             new ButtonBinding(),
             new ButtonBinding(),
         };
-        
+
+        public bool SetRespawnPointOnTeleport { get; set; } = false;
         public ButtonBinding TeleportPointClearModifier { get; set; }
         #endregion
 
