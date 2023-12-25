@@ -1,4 +1,5 @@
 ﻿using Celeste.Mod.viddiesToolbox.Menu;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -68,6 +69,40 @@ namespace Celeste.Mod.viddiesToolbox {
 
         [SettingIgnore]
         public bool AnalogUseMoveDirectionsForDashing { get; set; } = false;
+        #endregion
+
+        #region Teleport Points
+        public List<Vector2> TeleportPointsPositions = new List<Vector2>() {
+            Vector2.Zero,
+            Vector2.Zero,
+            Vector2.Zero,
+            Vector2.Zero,
+            Vector2.Zero,
+        };
+        public List<Vector2> TeleportPointsRemainders = new List<Vector2>() {
+            Vector2.Zero,
+            Vector2.Zero,
+            Vector2.Zero,
+            Vector2.Zero,
+            Vector2.Zero,
+        };
+        public List<string> TeleportPointsLevelNames = new List<string>() {
+            null,
+            null,
+            null,
+            null,
+            null,
+        };
+
+        public List<ButtonBinding> ButtonsTeleportPoint { get; set; } = new List<ButtonBinding>() {
+            new ButtonBinding(),
+            new ButtonBinding(),
+            new ButtonBinding(),
+            new ButtonBinding(),
+            new ButtonBinding(),
+        };
+        
+        public ButtonBinding TeleportPointClearModifier { get; set; }
         #endregion
 
         #region Hotkeys

@@ -57,7 +57,7 @@ namespace Celeste.Mod.viddiesToolbox.Menu {
                         Add(new SubHeader(subheader.DialogCleanOrNull() ?? subheader));
 
                     AddMapForceLabel(name, binding.Binding);
-                    
+
                 } else if (prop.GetValue(settings) is Dictionary<string, ButtonBinding> bindingMap) { //New changes
                     string name = prop.GetCustomAttribute<SettingNameAttribute>()?.Name ?? $"{nameDefaultPrefix}{prop.Name.ToLowerInvariant()}";
                     name = name.DialogCleanOrNull() ?? (prop.Name.ToLowerInvariant().StartsWith("buttons") ? prop.Name.Substring(7) : prop.Name).SpacedPascalCase();
@@ -69,6 +69,19 @@ namespace Celeste.Mod.viddiesToolbox.Menu {
                     foreach (KeyValuePair<string, ButtonBinding> entry in bindingMap) {
                         Bindings.Add(new ButtonBindingEntry(entry.Value, null));
                         AddMapForceLabel($"{name}: {entry.Key}", entry.Value.Binding);
+                    }
+                } else if (prop.GetValue(settings) is List<ButtonBinding> bindingList) { //New changes
+                    string name = prop.GetCustomAttribute<SettingNameAttribute>()?.Name ?? $"{nameDefaultPrefix}{prop.Name.ToLowerInvariant()}";
+                    name = name.DialogCleanOrNull() ?? (prop.Name.ToLowerInvariant().StartsWith("buttons") ? prop.Name.Substring(7) : prop.Name).SpacedPascalCase();
+
+                    string subheader = prop.GetCustomAttribute<SettingSubHeaderAttribute>()?.SubHeader;
+                    if (subheader != null)
+                        Add(new SubHeader(subheader.DialogCleanOrNull() ?? subheader));
+
+                    for (int i = 0; i < bindingList.Count; i++) {
+                        ButtonBinding entry = bindingList[i];
+                        Bindings.Add(new ButtonBindingEntry(entry, null));
+                        AddMapForceLabel($"{name}: {i + 1}", entry.Binding);
                     }
                 }
             }

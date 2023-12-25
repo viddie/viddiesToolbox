@@ -5,6 +5,7 @@ using Celeste.Mod.viddiesToolbox.Entities;
 using Celeste.Mod.viddiesToolbox.Enums;
 using Celeste.Mod.viddiesToolbox.Menu;
 using Celeste.Mod.viddiesToolbox.ThirdParty;
+using Celeste.Mod.viddiesToolbox.Tools;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -32,6 +33,7 @@ namespace Celeste.Mod.viddiesToolbox {
         private float _SavedFreezeTimer = float.NaN;
         private bool _DidFrameAdvance = false;
 
+        public TeleportPoints Teleports = new TeleportPoints();
 
         public ViddiesToolboxModule() {
             Instance = this;
@@ -43,13 +45,18 @@ namespace Celeste.Mod.viddiesToolbox {
             On.Monocle.Engine.Update += Engine_Update;
             On.Celeste.SpeedrunTimerDisplay.DrawTime += SpeedrunTimerDisplay_DrawTime;
             On.Celeste.Level.LoadLevel += Level_LoadLevel;
-
             On.Celeste.Input.GetAimVector += Input_GetAimVector;
+
+            Teleports.Hook();
         }
 
         public override void Unload() {
             On.Monocle.Engine.Update -= Engine_Update;
             On.Celeste.SpeedrunTimerDisplay.DrawTime -= SpeedrunTimerDisplay_DrawTime;
+            On.Celeste.Level.LoadLevel -= Level_LoadLevel;
+            On.Celeste.Input.GetAimVector -= Input_GetAimVector;
+
+            Teleports.UnHook();
         }
 
         public override void Initialize() {
@@ -76,6 +83,9 @@ namespace Celeste.Mod.viddiesToolbox {
             foreach (KeyValuePair<string, ButtonBinding> entry in ModSettings.ButtonsConsoleCommands) {
                 InitializeButtonBinding(entry.Value);
             }
+            foreach (ButtonBinding entry in ModSettings.ButtonsTeleportPoint) {
+                InitializeButtonBinding(entry);
+            }
         }
 
         #region Hooks
@@ -87,13 +97,13 @@ namespace Celeste.Mod.viddiesToolbox {
             if (ModSettings.ButtonToggleFreezeEngine.Pressed && ModSettings.HotkeysEnabled) {
                 if (EngineFrozenState == FreezeState.Normal) {
                     _TargetFreezeState = FreezeState.Frozen;
-                    Log($"Freezing engine | FreezeTimer: {Engine.FreezeTimer}, SavedFreezeTimer: {_SavedFreezeTimer} | DeltaTime: {Engine.DeltaTime}, RawDeltaTime: {Engine.RawDeltaTime}");
+                    //Log($"Freezing engine | FreezeTimer: {Engine.FreezeTimer}, SavedFreezeTimer: {_SavedFreezeTimer} | DeltaTime: {Engine.DeltaTime}, RawDeltaTime: {Engine.RawDeltaTime}");
                 } else {
                     _TargetFreezeState = FreezeState.Normal;
-                    Log("Unfreezing engine");
+                    //Log("Unfreezing engine");
                 }
-                Log($"Freeze state check: Current: {EngineFrozenState}, New: {_TargetFreezeState}");
-                ResetLogOnce();
+                //Log($"Freeze state check: Current: {EngineFrozenState}, New: {_TargetFreezeState}");
+                //ResetLogOnce();
             }
 
             if (_TargetFreezeState != null) { 
@@ -128,7 +138,7 @@ namespace Celeste.Mod.viddiesToolbox {
                 }
             }
 
-            LogOnce($"Engine.FreezeTime: {Engine.FreezeTimer}, _SavedFreezeTimer: {_SavedFreezeTimer}");
+            //LogOnce($"Engine.FreezeTime: {Engine.FreezeTimer}, _SavedFreezeTimer: {_SavedFreezeTimer}");
 
             EngineFrozenState = newState;
         }
@@ -345,7 +355,7 @@ namespace Celeste.Mod.viddiesToolbox {
         public void LogOnce(string message) {
             if (_LoggedOnce) return;
             _LoggedOnce = true;
-            Log(message);
+            Log(message, LogLevel.Info);
         }
         public void ResetLogOnce() {
             _LoggedOnce = false;
@@ -402,6 +412,9 @@ namespace Celeste.Mod.viddiesToolbox {
             //Deregister custom bindings
             foreach (KeyValuePair<string, ButtonBinding> entry in ModSettings.ButtonsConsoleCommands) {
                 DeregisterButtonBinding(entry.Value);
+            }
+            foreach (ButtonBinding entry in ModSettings.ButtonsTeleportPoint) {
+                DeregisterButtonBinding(entry);
             }
         }
         #endregion
