@@ -28,7 +28,7 @@ namespace Celeste.Mod.viddiesToolbox {
 
         public void CreateMovePlayerMenuEntry(TextMenu menu, bool inGame) {
             List<float> MoveSteps = new List<float>() {
-                0.2f, 0.1f, 0.05f, 0.01f, 0.005f, 0.001f,
+                0.2f, 0.1f, 0.05f, 0.01f, 0.005f, 0.001f, 0.0005f, 0.0001f, 0.00005f, 0.00001f, 0.000005f, 0.000001f
             };
             menu.Add(new CustomEnumerableSlider<float>("Move Player Modified Distance", MoveSteps, (v) => v.ToString(), MovePlayerModifiedStep) {
                 OnValueChange = (v) => {
