@@ -1,4 +1,5 @@
 ﻿using Celeste.Mod.viddiesToolbox.Menu;
+using Celeste.Mod.viddiesToolbox.Tools;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -13,9 +14,43 @@ namespace Celeste.Mod.viddiesToolbox {
         [SettingIgnore]
         private ViddiesToolboxModule Mod => ViddiesToolboxModule.Instance;
 
+        #region Map Timer
+        public bool EnableMapTimer { get; set; } = false;
+        public bool EnableRoomTimer { get; set; } = false;
+        #endregion
+
+        #region Analog Direction Fixer
+        public bool AnalogUseDashDirectionsForMovement { get; set; } = false;
+        public void CreateAnalogUseDashDirectionsForMovementEntry(TextMenu menu, bool inGame) {
+            menu.Add(new TextMenu.OnOff("Analog: Use Dash Directions For Moving", AnalogUseDashDirectionsForMovement) {
+                OnValueChange = v => {
+                    AnalogUseDashDirectionsForMovement = v;
+                    ViddiesToolboxModule.Instance.SetAnalogMoveDirectionsEnabled(v);
+                }
+            });
+        }
+
+        [SettingIgnore]
+        public bool AnalogUseMoveDirectionsForDashing { get; set; } = false;
+        #endregion
+
+        #region Hotkeys
+        public bool HotkeysEnabled { get; set; } = true;
+        public ButtonBinding ToggleHotkeys { get; set; }
+        #endregion
+
+        #region Lineup Helper
+        [SettingIgnore]
+        public bool DemoLineupEnabled { get; set; } = false;
+        [SettingIgnore]
+        public string DemoLineupSelectedTech { get; set; } = "Full Jump";
+        public ButtonBinding ButtonDemoLineupNextTech { get; set; }
+        #endregion
+
         #region Move Player Keybinds
         public float MovePlayerModifiedStep { get; set; } = 0.1f;
 
+        [SettingSubHeader("Move Player")]
         public ButtonBinding ButtonMovePlayerUp { get; set; }
         public ButtonBinding ButtonMovePlayerDown { get; set; }
         public ButtonBinding ButtonMovePlayerLeft { get; set; }
@@ -39,61 +74,18 @@ namespace Celeste.Mod.viddiesToolbox {
         #endregion
 
         #region Freeze Engine Keybinds
+        [SettingSubHeader("Freeze Engine")]
         public ButtonBinding ButtonToggleFreezeEngine { get; set; }
         public ButtonBinding ButtonAdvanceFrame { get; set; }
         #endregion
 
-        #region Map Timer
-        public bool EnableMapTimer { get; set; } = false;
-        public bool EnableRoomTimer { get; set; } = false;
-        #endregion
-
-        #region Lineup Helper
-        [SettingIgnore]
-        public bool DemoLineupEnabled { get; set; } = false;
-        [SettingIgnore]
-        public string DemoLineupSelectedTech { get; set; } = "Full Jump";
-        public ButtonBinding ButtonDemoLineupNextTech { get; set; }
-        #endregion
-
-        #region Analog Direction Fixer
-        public bool AnalogUseDashDirectionsForMovement { get; set; } = false;
-        public void CreateAnalogUseDashDirectionsForMovementEntry(TextMenu menu, bool inGame) {
-            menu.Add(new TextMenu.OnOff("Analog: Use Dash Directions For Moving", AnalogUseDashDirectionsForMovement) {
-                OnValueChange = v => {
-                    AnalogUseDashDirectionsForMovement = v;
-                    ViddiesToolboxModule.Instance.SetAnalogMoveDirectionsEnabled(v);
-                }
-            });
-        }
-
-        [SettingIgnore]
-        public bool AnalogUseMoveDirectionsForDashing { get; set; } = false;
-        #endregion
-
         #region Teleport Points
-        public List<Vector2> TeleportPointsPositions = new List<Vector2>() {
-            Vector2.Zero,
-            Vector2.Zero,
-            Vector2.Zero,
-            Vector2.Zero,
-            Vector2.Zero,
+        [SettingIgnore]
+        public int TeleportPointsMax { get; set; } = 5;
+        public List<TeleportPoints.PositionData> TeleportPoints = new List<TeleportPoints.PositionData>() {
+            null, null, null, null, null
         };
-        public List<Vector2> TeleportPointsRemainders = new List<Vector2>() {
-            Vector2.Zero,
-            Vector2.Zero,
-            Vector2.Zero,
-            Vector2.Zero,
-            Vector2.Zero,
-        };
-        public List<string> TeleportPointsLevelNames = new List<string>() {
-            null,
-            null,
-            null,
-            null,
-            null,
-        };
-
+        [SettingSubHeader("Teleport Points")]
         public List<ButtonBinding> ButtonsTeleportPoint { get; set; } = new List<ButtonBinding>() {
             new ButtonBinding(),
             new ButtonBinding(),
@@ -101,17 +93,35 @@ namespace Celeste.Mod.viddiesToolbox {
             new ButtonBinding(),
             new ButtonBinding(),
         };
-
-        public bool SetRespawnPointOnTeleport { get; set; } = false;
+        public ButtonBinding TeleportPointSetRespawnModifier { get; set; }
         public ButtonBinding TeleportPointClearModifier { get; set; }
-        #endregion
 
-        #region Hotkeys
-        public bool HotkeysEnabled { get; set; } = true;
-        public ButtonBinding ToggleHotkeys { get; set; }
+        public bool TeleportPointsMenu { get; set; }
+        public void CreateTeleportPointsMenuEntry(TextMenu menu, bool inGame) {
+            menu.Add(new TextMenu.Slider("Teleport Points", i => i.ToString(), 1, 100, TeleportPointsMax) {
+                OnValueChange = (v) => {
+                    TeleportPointsMax = v;
+                    while (TeleportPoints.Count > TeleportPointsMax) {
+                        int lastIndex = TeleportPoints.Count - 1;
+                        TeleportPoints.RemoveAt(lastIndex);
+                        //Button Bindings
+                        Mod.DeregisterButtonBinding(ButtonsTeleportPoint[lastIndex]);
+                        ButtonsTeleportPoint.RemoveAt(lastIndex);
+                    } 
+                    while (TeleportPoints.Count < TeleportPointsMax) {
+                        TeleportPoints.Add(null);
+                        //Button Bindings
+                        ButtonBinding binding = new ButtonBinding();
+                        ButtonsTeleportPoint.Add(binding);
+                        Mod.InitializeButtonBinding(binding);
+                    }
+                }
+            });
+        }
         #endregion
 
         #region Arbitrary Console Commands
+        [SettingSubHeader("Console Commands")]
         public Dictionary<string, ButtonBinding> ButtonsConsoleCommands { get; set; } = new Dictionary<string, ButtonBinding>() {
             ["Button 1"] = new ButtonBinding(),
         };
