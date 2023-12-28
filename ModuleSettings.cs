@@ -74,9 +74,13 @@ namespace Celeste.Mod.viddiesToolbox {
         #endregion
 
         #region Freeze Engine Keybinds
+        [SettingRange(2, 99999)]
+        public int FreezeEngineMultipleFrames { get; set; } = 1;
+        
         [SettingSubHeader("Freeze Engine")]
         public ButtonBinding ButtonToggleFreezeEngine { get; set; }
         public ButtonBinding ButtonAdvanceFrame { get; set; }
+        public ButtonBinding ButtonAdvanceMultipleFrames { get; set; }
         #endregion
 
         #region Teleport Points

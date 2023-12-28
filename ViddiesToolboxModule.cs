@@ -23,6 +23,7 @@ namespace Celeste.Mod.viddiesToolbox {
         public static string UnfreezeSound = SFX.ui_game_unpause;
         public static string FrameAdvanceSound = SFX.ui_main_button_select;
 
+        public static float FreezeTime = 0.01666666f * 1000;
         public override Type SettingsType => typeof(ModuleSettings);
         public ModuleSettings ModSettings => (ModuleSettings)this._Settings;
 
@@ -32,6 +33,7 @@ namespace Celeste.Mod.viddiesToolbox {
         private FreezeState EngineFrozenState = FreezeState.Normal;
         private float _SavedFreezeTimer = float.NaN;
         private bool _DidFrameAdvance = false;
+        private int _AdvanceFrames = -1;
 
         public TeleportPoints Teleports = new TeleportPoints();
 
@@ -111,35 +113,42 @@ namespace Celeste.Mod.viddiesToolbox {
                 _TargetFreezeState = null;
             }
 
-            bool doFrameAdvance = ModSettings.ButtonAdvanceFrame.Pressed && ModSettings.HotkeysEnabled;
-            if (EngineFrozenState == FreezeState.Normal && newState == FreezeState.Frozen) { //Previously normal, now frozen
-                _SavedFreezeTimer = Engine.FreezeTimer;
-                Engine.FreezeTimer = 0.01666666f * 1000;
-                Audio.Play(FreezeSound);
-                
-            } else if (EngineFrozenState == FreezeState.Frozen && newState == FreezeState.Normal) { //Previously frozen, now normal
-                Engine.FreezeTimer = _SavedFreezeTimer;
-                _SavedFreezeTimer = float.NaN;
-                Audio.Play(UnfreezeSound);
-
-            } else if (EngineFrozenState == FreezeState.Frozen && newState == FreezeState.Frozen) {
-                if (_DidFrameAdvance) {
+            bool doFrameAdvance = (ModSettings.ButtonAdvanceFrame.Pressed || ModSettings.ButtonAdvanceMultipleFrames.Pressed) && ModSettings.HotkeysEnabled;
+            switch (EngineFrozenState) {
+                case FreezeState.Normal when newState == FreezeState.Frozen: //Previously normal, now frozen
                     _SavedFreezeTimer = Engine.FreezeTimer;
-                    _DidFrameAdvance = false;
-                }
-                
-                if (doFrameAdvance) {
+                    Engine.FreezeTimer = FreezeTime;
+                    Audio.Play(FreezeSound);
+                    break;
+                case FreezeState.Frozen when newState == FreezeState.Normal: //Previously frozen, now normal
                     Engine.FreezeTimer = _SavedFreezeTimer;
-                    ResetLogOnce();
-                    _DidFrameAdvance = true;
-                    Audio.Play(SFX.ui_main_button_select);
-                } else {
-                    Engine.FreezeTimer = 0.01666666f * 1000;
+                    _SavedFreezeTimer = float.NaN;
+                    Audio.Play(UnfreezeSound);
+                    break;
+                case FreezeState.Frozen when newState == FreezeState.Frozen: {
+                    if (doFrameAdvance && _AdvanceFrames == -1) {
+                        _AdvanceFrames = ModSettings.ButtonAdvanceMultipleFrames.Pressed ? ModSettings.FreezeEngineMultipleFrames : 1;
+                        Engine.FreezeTimer = _SavedFreezeTimer;
+                        Audio.Play(FrameAdvanceSound);
+                        ResetLogOnce();
+                    }
+
+                    if (_AdvanceFrames > 0) {
+                        ResetLogOnce();
+                        _AdvanceFrames--;
+                    } else if (_AdvanceFrames == 0) {
+                        _AdvanceFrames = -1;
+                        _SavedFreezeTimer = Engine.FreezeTimer;
+                        Engine.FreezeTimer = FreezeTime;
+                    } else {
+                        Engine.FreezeTimer = FreezeTime;
+                    }
+                    
+                    break;
                 }
             }
 
-            //LogOnce($"Engine.FreezeTime: {Engine.FreezeTimer}, _SavedFreezeTimer: {_SavedFreezeTimer}");
-
+            LogOnce($"Engine.FreezeTime: {Engine.FreezeTimer}, _SavedFreezeTimer: {_SavedFreezeTimer}");
             EngineFrozenState = newState;
         }
 
