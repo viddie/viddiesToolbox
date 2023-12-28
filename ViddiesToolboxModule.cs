@@ -275,11 +275,10 @@ namespace Celeste.Mod.viddiesToolbox {
 
             string roomTimeString = "";
             if (ConsistencyTrackerLoaded) {
-                long timeSpent = ConsistencyTrackerModule.Instance.CurrentChapterStats.CurrentRoom.TimeSpentInRoom;
+                long timeSpent = GetTimeSpentInCurrentRoom();
                 TimeSpan timeSpanRoom = TimeSpan.FromTicks(timeSpent);
                 roomTimeString = ((!(timeSpanRoom.TotalHours >= 1.0)) ? timeSpanRoom.ToString("mm\\:ss") : ((int)timeSpanRoom.TotalHours + ":" + timeSpanRoom.ToString("mm\\:ss")));
             }
-
 
             if (timeString == fileString) {
                 if (ModSettings.EnableMapTimer) {
@@ -294,7 +293,7 @@ namespace Celeste.Mod.viddiesToolbox {
 
             orig(position, timeString, scale, valid, finished, bestTime, alpha);
         }
-        
+
         private void Level_LoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerIntro, bool isFromLoader) {
             orig(self, playerIntro, isFromLoader);
             self.Add(new LineupIndicatorEntity());
@@ -440,6 +439,12 @@ namespace Celeste.Mod.viddiesToolbox {
         }
 
         public void SpeedrunToolClearState() {}
+        #endregion
+
+        #region CCT Support
+        private static long GetTimeSpentInCurrentRoom() {
+            return ConsistencyTrackerModule.Instance.CurrentChapterStats.CurrentRoom.TimeSpentInRoom;
+        }
         #endregion
     }
 }
