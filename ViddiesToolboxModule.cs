@@ -69,9 +69,7 @@ namespace Celeste.Mod.viddiesToolbox {
             }
 
             // load SpeedrunTool if it exists
-            if (Everest.Modules.Any(m => m.Metadata.Name == "SpeedrunTool")) {
-                SpeedrunToolSupport.Load();
-            }
+            SpeedrunToolSupport.Load();
 
             if (Everest.Modules.Any(m => m.Metadata.Name == "ConsistencyTracker")) {
                 ConsistencyTrackerLoaded = true;
@@ -181,41 +179,64 @@ namespace Celeste.Mod.viddiesToolbox {
             }
             if (!ModSettings.HotkeysEnabled) return;
 
-            if (!ModSettings.ButtonSetSubpixelModifier.Check) {
-                float distance = ModSettings.ButtonMovePlayerModifier.Check ? ModSettings.MovePlayerModifiedStep : 1f;
+            Follower follower = player.Leader.Followers.Find((f) => f.Entity is Strawberry);
+            if (follower != null && ModSettings.ButtonTargetGoldenModifier.Check) {
+                follower.MoveTowardsLeader = false;
+                Strawberry berry = (Strawberry)follower.Entity;
+                if (!ModSettings.ButtonSetSubpixelModifier.Check) {
+                    float distance = 1f;
 
-                if (ModSettings.ButtonMovePlayerUp.Pressed) {
-                    player.MoveV(-distance);
+                    if (ModSettings.ButtonMovePlayerUp.Pressed) {
+                        berry.Position.Y -= distance;
+                    }
+                    if (ModSettings.ButtonMovePlayerDown.Pressed) {
+                        berry.Position.Y += distance;
+                    }
+                    if (ModSettings.ButtonMovePlayerLeft.Pressed) {
+                        berry.Position.X -= distance;
+                    }
+                    if (ModSettings.ButtonMovePlayerRight.Pressed) {
+                        berry.Position.X += distance;
+                    }
                 }
-                if (ModSettings.ButtonMovePlayerDown.Pressed) {
-                    player.MoveV(distance);
+            } else {
+                if (!ModSettings.ButtonSetSubpixelModifier.Check) {
+                    float distance = ModSettings.ButtonMovePlayerModifier.Check ? ModSettings.MovePlayerModifiedStep : 1f;
+
+                    if (ModSettings.ButtonMovePlayerUp.Pressed) {
+                        player.MoveV(-distance);
+                    }
+                    if (ModSettings.ButtonMovePlayerDown.Pressed) {
+                        player.MoveV(distance);
+                    }
+                    if (ModSettings.ButtonMovePlayerLeft.Pressed) {
+                        player.MoveH(-distance);
+                    }
+                    if (ModSettings.ButtonMovePlayerRight.Pressed) {
+                        player.MoveH(distance);
+                    }
                 }
-                if (ModSettings.ButtonMovePlayerLeft.Pressed) {
-                    player.MoveH(-distance);
-                }
-                if (ModSettings.ButtonMovePlayerRight.Pressed) {
-                    player.MoveH(distance);
+
+                if (ModSettings.ButtonSetSubpixelModifier.Check) {
+                    if (ModSettings.ButtonMovePlayerUp.Pressed) {
+                        float moveV = -player.PositionRemainder.Y;
+                        player.MoveV(moveV - 0.5f);
+                    }
+                    if (ModSettings.ButtonMovePlayerDown.Pressed) {
+                        float moveV = 1 - player.PositionRemainder.Y;
+                        player.MoveV(moveV - 0.5f);
+                    }
+                    if (ModSettings.ButtonMovePlayerLeft.Pressed) {
+                        float moveH = -player.PositionRemainder.X;
+                        player.MoveH(moveH - 0.5f);
+                    }
+                    if (ModSettings.ButtonMovePlayerRight.Pressed) {
+                        float moveH = 1 - player.PositionRemainder.X;
+                        player.MoveH(moveH - 0.5f);
+                    }
                 }
             }
 
-            if (ModSettings.ButtonSetSubpixelModifier.Check) {
-                if (ModSettings.ButtonMovePlayerUp.Pressed) {
-                    float moveV = -player.PositionRemainder.Y;
-                    player.MoveV(moveV - 0.5f);
-                }
-                if (ModSettings.ButtonMovePlayerDown.Pressed) {
-                    float moveV = 1 - player.PositionRemainder.Y;
-                    player.MoveV(moveV - 0.5f);
-                }
-                if (ModSettings.ButtonMovePlayerLeft.Pressed) {
-                    float moveH = -player.PositionRemainder.X;
-                    player.MoveH(moveH - 0.5f);
-                }
-                if (ModSettings.ButtonMovePlayerRight.Pressed) {
-                    float moveH = 1 - player.PositionRemainder.X;
-                    player.MoveH(moveH - 0.5f);
-                }
-            }
             
             foreach (KeyValuePair<string, ButtonBinding> entry in ModSettings.ButtonsConsoleCommands) {
                 if (entry.Value.Pressed) {

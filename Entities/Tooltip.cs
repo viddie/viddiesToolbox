@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Linq;
-using Celeste.Mod.SpeedrunTool.SaveLoad;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -24,7 +23,7 @@ namespace Celeste.Mod.viddiesToolbox.Entities {
             Position = new Vector2(Padding, Engine.Height - messageSize.Y - Padding / 2f);
             Tag = Tags.HUD | Tags.Global | Tags.FrozenUpdate | Tags.PauseUpdate | Tags.TransitionUpdate;
             Add(new Coroutine(Show()));
-            Add(new IgnoreSaveLoadComponent());
+            // Add(new IgnoreSaveLoadComponent());
         }
 
         private IEnumerator Show() {

@@ -58,6 +58,7 @@ namespace Celeste.Mod.viddiesToolbox {
 
         public ButtonBinding ButtonMovePlayerModifier { get; set; }
         public ButtonBinding ButtonSetSubpixelModifier { get; set; }
+        public ButtonBinding ButtonTargetGoldenModifier { get; set; }
 
         public bool MovePlayerMenu { get; set; }
 

@@ -1,12 +1,8 @@
-﻿using Celeste.Mod.Entities;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Monocle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Celeste.Mod.viddiesToolbox.Entities {
     public class LineupIndicatorEntity : Entity {
