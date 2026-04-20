@@ -14,6 +14,7 @@ using MonoMod;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Util = Celeste.Mod.viddiesToolbox.Tools.Util;
 
 namespace Celeste.Mod.viddiesToolbox {
     public class ViddiesToolboxModule : EverestModule {
@@ -105,25 +106,25 @@ namespace Celeste.Mod.viddiesToolbox {
 
         #region Hooks
 
-        private FreezeState? _TargetFreezeState;
+        private FreezeState? targetFreezeState;
         private void EnginePreUpdate() {
             FreezeState newState = engineFrozenState;
             
             if (ModSettings.ButtonToggleFreezeEngine.Pressed && ModSettings.HotkeysEnabled) {
                 if (engineFrozenState == FreezeState.Normal) {
-                    _TargetFreezeState = FreezeState.Frozen;
+                    targetFreezeState = FreezeState.Frozen;
                     //Log($"Freezing engine | FreezeTimer: {Engine.FreezeTimer}, SavedFreezeTimer: {_SavedFreezeTimer} | DeltaTime: {Engine.DeltaTime}, RawDeltaTime: {Engine.RawDeltaTime}");
                 } else {
-                    _TargetFreezeState = FreezeState.Normal;
+                    targetFreezeState = FreezeState.Normal;
                     //Log("Unfreezing engine");
                 }
                 //Log($"Freeze state check: Current: {EngineFrozenState}, New: {_TargetFreezeState}");
                 //ResetLogOnce();
             }
 
-            if (_TargetFreezeState != null) { 
-                newState = _TargetFreezeState.Value;
-                _TargetFreezeState = null;
+            if (targetFreezeState != null) { 
+                newState = targetFreezeState.Value;
+                targetFreezeState = null;
             }
 
             bool doFrameAdvance = (ModSettings.ButtonAdvanceFrame.Pressed || ModSettings.ButtonAdvanceMultipleFrames.Pressed) && ModSettings.HotkeysEnabled;
@@ -275,6 +276,10 @@ namespace Celeste.Mod.viddiesToolbox {
                         string[] args = split.Length > 1 ? split[1].Split(' ') : new string[0];
 
                         Log($"Executing button '{buttonName}' with command '{consoleCommand}' -> '{command}' with args '{string.Join("', '", args)}'");
+                        
+                        // Engine.Commands.commandHistory is private, but the command needs to be added to it for other special commands to work. Its a simple list of strings containing the full text (command and parameters) to execute.
+                        var commandHistory = Util.GetPrivateProperty<List<string>>(Engine.Commands, "commandHistory");
+                        commandHistory?.Insert(0, consoleCommand);
                         Engine.Commands.ExecuteCommand(command, args);
                     } catch (Exception ex) {
                         Log($"Exception while executing button '{buttonName}' with command '{consoleCommand}': {ex}", LogLevel.Warn);
@@ -284,7 +289,7 @@ namespace Celeste.Mod.viddiesToolbox {
         }
 
 
-        private int logCounter = 0;
+        private int logCounter;
         private void SpeedrunTimerDisplay_DrawTime(On.Celeste.SpeedrunTimerDisplay.orig_DrawTime orig, Vector2 position, string timeString, float scale, bool valid, bool finished, bool bestTime, float alpha) {
             if (!ModSettings.EnableMapTimer && !RoomTimerEnabled && !ModSettings.EnableCampaignTimer) {
                 orig(position, timeString, scale, valid, finished, bestTime, alpha);
@@ -390,7 +395,7 @@ namespace Celeste.Mod.viddiesToolbox {
             Logger.Log(level, "viddiesToolbox", message);
         }
 
-        private bool loggedOnce = false;
+        private bool loggedOnce;
 
         private void LogOnce(string message) {
             if (loggedOnce) return;
@@ -463,12 +468,12 @@ namespace Celeste.Mod.viddiesToolbox {
         #region Speedrun Tool Support
         public void SpeedrunToolSaveState(Dictionary<Type, Dictionary<string, object>> savedvalues, Level level) {
             Log($"SaveState set", LogLevel.Debug);
-            _TargetFreezeState = FreezeState.Normal;
+            targetFreezeState = FreezeState.Normal;
         }
 
         public void SpeedrunToolLoadState(Dictionary<Type, Dictionary<string, object>> savedvalues, Level level) {
             Log($"SaveState loaded", LogLevel.Debug);
-            _TargetFreezeState = FreezeState.Normal;
+            targetFreezeState = FreezeState.Normal;
         }
 
         public void SpeedrunToolClearState() {}
