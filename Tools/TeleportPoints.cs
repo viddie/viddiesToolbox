@@ -44,7 +44,7 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
             orig(self);
 
             if (_ApplyRemainderIndex != -1) {
-                Tooltip.Show($"Teleported to point {_ApplyRemainderIndex + 1}", 1.3f);
+                Tooltip.Show(String.Format(Dialog.Get("VIDDIES_TOOLBOX_TELEPORT_POINTS_TELEPORTED_TO_POINT"), _ApplyRemainderIndex + 1), 1.3f);
 
                 if (!_SetRespawn) {
                     self.Session.RespawnPoint = null; //Set respawn to closest respawn point in the room
@@ -100,13 +100,13 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
             Settings.TeleportPoints[index] = data;
             Mod.SaveSettings();
             Mod.Log($"Set teleport point {index} to position: {data.Position} remainder {data.Remainder}", LogLevel.Info);
-            Tooltip.Show($"Saved teleport ({index + 1})");
+            Tooltip.Show(String.Format(Dialog.Get("VIDDIES_TOOLBOX_TELEPORT_POINTS_SAVED"), index + 1));
         }
         public void ClearTeleportPoint(int index) {
             Settings.TeleportPoints[index] = null;
             Mod.SaveSettings();
             Mod.Log($"Cleared teleport point {index}", LogLevel.Info);
-            Tooltip.Show($"Cleared teleport ({index + 1})");
+            Tooltip.Show(String.Format(Dialog.Get("VIDDIES_TOOLBOX_TELEPORT_POINTS_CLEARED"), index + 1));
         }
         public void UseTeleportPoint(Player player, Session session, int index, bool setRespawn) {
             PositionData data = Settings.TeleportPoints[index];
@@ -121,7 +121,7 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
 
             if (session.MapData.Levels.FirstOrDefault((LevelData lvl) => lvl.Name == levelName) == null) {
                 Mod.Log($"Teleport Point {index}: Level '{levelName}' wasn't found in the current chapter", LogLevel.Info);
-                Tooltip.Show($"Level '{levelName}' wasn't found");
+                Tooltip.Show(String.Format(Dialog.Get("VIDDIES_TOOLBOX_TELEPORT_POINTS_LEVEL_NOT_FOUND"), levelName));
                 return;
             }
 
@@ -146,7 +146,7 @@ namespace Celeste.Mod.viddiesToolbox.Tools {
                 ApplyRemainder(player, remainder);
             }
 
-            Tooltip.Show($"Teleported to point ({index + 1})");
+            Tooltip.Show(String.Format(Dialog.Get("VIDDIES_TOOLBOX_TELEPORT_POINTS_TELEPORTED_TO_POINT"), index + 1));
             Mod.Log($"Teleport Point {index}: Teleported player to position: {position} remainder {remainder}", LogLevel.Info);
         }
 

@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Celeste.Mod.viddiesToolbox {
+
+    [SettingName("VIDDIES_TOOLBOX_NAME")]    
     public class ModuleSettings : EverestModuleSettings {
 
         [SettingIgnore]
@@ -22,8 +24,8 @@ namespace Celeste.Mod.viddiesToolbox {
 
         public bool Timer { get; set; } = false;
         public void CreateTimerEntry(TextMenu menu, bool inGame) {
-            TextMenu.OnOff campaignEntry = new TextMenu.OnOff("Enable Campaign Timer", EnableCampaignTimer);
-            TextMenu.OnOff mapEntry = new TextMenu.OnOff("Enable Map Timer", EnableMapTimer);
+            TextMenu.OnOff campaignEntry = new TextMenu.OnOff(Dialog.Clean("VIDDIES_TOOLBOX_CAMPAIGN_TIMER"), EnableCampaignTimer);
+            TextMenu.OnOff mapEntry = new TextMenu.OnOff(Dialog.Clean("VIDDIES_TOOLBOX_MAP_TIMER"), EnableMapTimer);
             campaignEntry.OnValueChange = v => {
                 EnableCampaignTimer = v;
                 if (!v || !EnableMapTimer) return;
@@ -43,7 +45,8 @@ namespace Celeste.Mod.viddiesToolbox {
             menu.Add(campaignEntry);
             menu.Add(mapEntry);
         }
-        
+
+        [SettingName("VIDDIES_TOOLBOX_ROOM_TIMER")]
         public bool EnableRoomTimer { get; set; } = false;
         
         #endregion
@@ -51,7 +54,7 @@ namespace Celeste.Mod.viddiesToolbox {
         #region Analog Direction Fixer
         public bool AnalogUseDashDirectionsForMovement { get; set; } = false;
         public void CreateAnalogUseDashDirectionsForMovementEntry(TextMenu menu, bool inGame) {
-            menu.Add(new TextMenu.OnOff("Analog: Use Dash Directions For Moving", AnalogUseDashDirectionsForMovement) {
+            menu.Add(new TextMenu.OnOff(Dialog.Clean("VIDDIES_TOOLBOX_ANALOG_DASH_MOVEMENT"), AnalogUseDashDirectionsForMovement) {
                 OnValueChange = v => {
                     AnalogUseDashDirectionsForMovement = v;
                     ViddiesToolboxModule.Instance.SetAnalogMoveDirectionsEnabled(v);
@@ -64,8 +67,11 @@ namespace Celeste.Mod.viddiesToolbox {
         #endregion
 
         #region Hotkeys
+        [SettingName("VIDDIES_TOOLBOX_HOTKEYS_ENABLED")]
         public bool HotkeysEnabled { get; set; } = true;
+        [SettingName("VIDDIES_TOOLBOX_TOGGLE_HOTKEYS")]
         public ButtonBinding ToggleHotkeys { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_TOGGLE_ANALOG_FIX")]
         public ButtonBinding ToggleAnalogFix { get; set; }
         #endregion
 
@@ -74,20 +80,29 @@ namespace Celeste.Mod.viddiesToolbox {
         public bool DemoLineupEnabled { get; set; } = false;
         [SettingIgnore]
         public string DemoLineupSelectedTech { get; set; } = "Full Jump";
+
+        [SettingName("VIDDIES_TOOLBOX_DEMO_LINEUP_NEXT_TECH")]
         public ButtonBinding ButtonDemoLineupNextTech { get; set; }
         #endregion
 
         #region Move Player Keybinds
         public float MovePlayerModifiedStep { get; set; } = 0.1f;
 
-        [SettingSubHeader("Move Player")]
+        [SettingSubHeader("VIDDIES_TOOLBOX_MOVE_PLAYER")]
+        [SettingName("VIDDIES_TOOLBOX_MOVE_PLAYER_UP")]
         public ButtonBinding ButtonMovePlayerUp { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_MOVE_PLAYER_DOWN")]
         public ButtonBinding ButtonMovePlayerDown { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_MOVE_PLAYER_LEFT")]
         public ButtonBinding ButtonMovePlayerLeft { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_MOVE_PLAYER_RIGHT")]
         public ButtonBinding ButtonMovePlayerRight { get; set; }
 
+        [SettingName("VIDDIES_TOOLBOX_MOVE_PLAYER_MODIFIER")]
         public ButtonBinding ButtonMovePlayerModifier { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_SET_SUBPIXEL_MODIFIER")]
         public ButtonBinding ButtonSetSubpixelModifier { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_TARGET_GOLDEN_MODIFIER")]
         public ButtonBinding ButtonTargetGoldenModifier { get; set; }
 
         public bool MovePlayerMenu { get; set; }
@@ -96,7 +111,7 @@ namespace Celeste.Mod.viddiesToolbox {
             List<float> MoveSteps = new List<float>() {
                 0.2f, 0.1f, 0.05f, 0.01f, 0.005f, 0.001f, 0.0005f, 0.0001f, 0.00005f, 0.00001f, 0.000005f, 0.000001f
             };
-            menu.Add(new CustomEnumerableSlider<float>("Move Player Modified Distance", MoveSteps, (v) => v.ToString(), MovePlayerModifiedStep) {
+            menu.Add(new CustomEnumerableSlider<float>(Dialog.Clean("VIDDIES_TOOLBOX_MOVE_PLAYER_MODIFIED_DISTANCE"), MoveSteps, (v) => v.ToString(), MovePlayerModifiedStep) {
                 OnValueChange = (v) => {
                     MovePlayerModifiedStep = v;
                 },
@@ -106,11 +121,15 @@ namespace Celeste.Mod.viddiesToolbox {
 
         #region Freeze Engine Keybinds
         [SettingRange(1, 99999)]
+        [SettingName("VIDDIES_TOOLBOX_FREEZE_ENGINE_MULTIPLE_FRAMES")]
         public int FreezeEngineMultipleFrames { get; set; } = 1;
         
-        [SettingSubHeader("Freeze Engine")]
+        [SettingSubHeader("VIDDIES_TOOLBOX_FREEZE_ENGINE")]
+        [SettingName("VIDDIES_TOOLBOX_FREEZE_ENGINE_TOGGLE")]
         public ButtonBinding ButtonToggleFreezeEngine { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_FREEZE_ENGINE_ADVANCE_FRAME")]
         public ButtonBinding ButtonAdvanceFrame { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_FREEZE_ENGINE_ADVANCE_MULTIPLE_FRAMES")]
         public ButtonBinding ButtonAdvanceMultipleFrames { get; set; }
         #endregion
 
@@ -120,7 +139,8 @@ namespace Celeste.Mod.viddiesToolbox {
         public List<TeleportPoints.PositionData> TeleportPoints = new List<TeleportPoints.PositionData>() {
             null, null, null, null, null
         };
-        [SettingSubHeader("Teleport Points")]
+        [SettingSubHeader("VIDDIES_TOOLBOX_TELEPORT_POINTS")]
+        [SettingName("VIDDIES_TOOLBOX_TELEPORT_POINTS")]
         public List<ButtonBinding> ButtonsTeleportPoint { get; set; } = new List<ButtonBinding>() {
             new ButtonBinding(),
             new ButtonBinding(),
@@ -128,12 +148,14 @@ namespace Celeste.Mod.viddiesToolbox {
             new ButtonBinding(),
             new ButtonBinding(),
         };
+        [SettingName("VIDDIES_TOOLBOX_TELEPORT_POINTS_BUTTONS_RESPAWN_MODIFIER")]
         public ButtonBinding TeleportPointSetRespawnModifier { get; set; }
+        [SettingName("VIDDIES_TOOLBOX_TELEPORT_POINTS_BUTTONS_CLEAR_MODIFIER")]
         public ButtonBinding TeleportPointClearModifier { get; set; }
 
         public bool TeleportPointsMenu { get; set; }
         public void CreateTeleportPointsMenuEntry(TextMenu menu, bool inGame) {
-            menu.Add(new TextMenu.Slider("Teleport Points", i => i.ToString(), 1, 100, TeleportPointsMax) {
+            menu.Add(new TextMenu.Slider(Dialog.Clean("VIDDIES_TOOLBOX_TELEPORT_POINTS"), i => i.ToString(), 1, 100, TeleportPointsMax) {
                 OnValueChange = (v) => {
                     TeleportPointsMax = v;
                     while (TeleportPoints.Count > TeleportPointsMax) {
@@ -156,7 +178,7 @@ namespace Celeste.Mod.viddiesToolbox {
         #endregion
 
         #region Arbitrary Console Commands
-        [SettingSubHeader("Console Commands")]
+        [SettingSubHeader("VIDDIES_TOOLBOX_CONSOLE_COMMANDS")]
         public Dictionary<string, ButtonBinding> ButtonsConsoleCommands { get; set; } = new Dictionary<string, ButtonBinding>() {
             ["Button 1"] = new ButtonBinding(),
         };
@@ -168,15 +190,15 @@ namespace Celeste.Mod.viddiesToolbox {
         public string ConsoleCommandSelected { get; set; } = "Button 1";
         public bool ConsoleCommandMenu { get; set; }
         public void CreateConsoleCommandMenuEntry(TextMenu menu, bool inGame) {
-            TextMenuExt.SubMenu subMenu = new TextMenuExt.SubMenu("Bindable Console Commands", false);
+            TextMenuExt.SubMenu subMenu = new TextMenuExt.SubMenu(Dialog.Clean("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS"), false);
 
-            TextMenuExt.EnumerableSlider<string> sliderSelectedCommand = new TextMenuExt.EnumerableSlider<string>("Selected Command", ButtonsConsoleCommands.Keys, ConsoleCommandSelected);
-            TextMenu.SubHeader headerButtonCommand = new TextMenu.SubHeader($"Command: {ConsoleCommands[ConsoleCommandSelected]}", topPadding: false);
+            TextMenuExt.EnumerableSlider<string> sliderSelectedCommand = new TextMenuExt.EnumerableSlider<string>(Dialog.Clean("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS_SELECTED_COMMAND"), ButtonsConsoleCommands.Keys, ConsoleCommandSelected);
+            TextMenu.SubHeader headerButtonCommand = new TextMenu.SubHeader(String.Format(Dialog.Get("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS_CURRENT_COMMAND"), ConsoleCommands[ConsoleCommandSelected]), topPadding: false);
 
-            TextMenu.Button buttonAddCommand = new TextMenu.Button("Add New Command");
-            TextMenu.Button buttonDeleteCommand = new TextMenu.Button("Delete Selected Command");
-            TextMenu.Button buttonImportButtonName = new TextMenu.Button("Import Command Name from Clipboard");
-            TextMenu.Button buttonImportCommand = new TextMenu.Button("Import Console Command from Clipboard");
+            TextMenu.Button buttonAddCommand = new TextMenu.Button(Dialog.Clean("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS_ADD_NEW_COMMAND"));
+            TextMenu.Button buttonDeleteCommand = new TextMenu.Button(Dialog.Clean("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS_DELETE_SELECTED_COMMAND"));
+            TextMenu.Button buttonImportButtonName = new TextMenu.Button(Dialog.Clean("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS_IMPORT_COMMAND_NAME_FROM_CLIPBOARD"));
+            TextMenu.Button buttonImportCommand = new TextMenu.Button(Dialog.Clean("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS_IMPORT_CONSOLE_COMMAND_FROM_CLIPBOARD"));
 
             sliderSelectedCommand.OnValueChange = (v) => {
                 ConsoleCommandSelected = v;
@@ -205,7 +227,7 @@ namespace Celeste.Mod.viddiesToolbox {
                 sliderSelectedCommand.SelectWiggler.Start();
 
                 ConsoleCommandSelected = sliderSelectedCommand.Values[0].Item1;
-                headerButtonCommand.Title = $"Command: {ConsoleCommands[ConsoleCommandSelected]}";
+                headerButtonCommand.Title = String.Format(Dialog.Get("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS_CURRENT_COMMAND"), ConsoleCommands[ConsoleCommandSelected]);
             };
 
             buttonImportButtonName.OnPressed = () => {
@@ -234,7 +256,7 @@ namespace Celeste.Mod.viddiesToolbox {
                 if (string.IsNullOrEmpty(text)) return;
 
                 ConsoleCommands[ConsoleCommandSelected] = text;
-                headerButtonCommand.Title = $"Command: {text}";
+                headerButtonCommand.Title = String.Format(Dialog.Get("VIDDIES_TOOLBOX_BINDABLE_CONSOLE_COMMANDS_CURRENT_COMMAND"), text);
             };
 
 
@@ -253,17 +275,17 @@ namespace Celeste.Mod.viddiesToolbox {
         #region Other
         public bool OtherOptions { get; set; }
         public void CreateOtherOptionsEntry(TextMenu menu, bool inGame) {
-            TextMenuExt.SubMenu subMenu = new TextMenuExt.SubMenu("Other", false);
+            TextMenuExt.SubMenu subMenu = new TextMenuExt.SubMenu(Dialog.Clean("VIDDIES_TOOLBOX_OTHER"), false);
 
             //Analog directions
-            subMenu.Add(new TextMenu.OnOff("Analog: Use Move Directions For Dashing", AnalogUseMoveDirectionsForDashing) {
+            subMenu.Add(new TextMenu.OnOff(Dialog.Clean("VIDDIES_TOOLBOX_ANALOG_MOVEMENT_DASH"), AnalogUseMoveDirectionsForDashing) {
                 OnValueChange = v => {
                     AnalogUseMoveDirectionsForDashing = v;
                 }
             });
 
             //Demo lineup helper
-            subMenu.Add(new TextMenu.OnOff("Demo Lineup Enabled", DemoLineupEnabled) {
+            subMenu.Add(new TextMenu.OnOff(Dialog.Clean("VIDDIES_TOOLBOX_OTHER_DEMO_LINEUP_ENABLED"), DemoLineupEnabled) {
                 OnValueChange = v => {
                     DemoLineupEnabled = v;
                 }
@@ -273,7 +295,7 @@ namespace Celeste.Mod.viddiesToolbox {
                 "Up Dash Buffer", "Up-Diagonal Dash Buffer", "Down Dash Buffer", "Down-Diagonal Dash Buffer", "Horizontal Dash Buffer",
                 "Max Height Hyper",
             };
-            subMenu.Add(new TextMenuExt.EnumerableSlider<string>("Demo Lineup Tech", techList, DemoLineupSelectedTech) {
+            subMenu.Add(new TextMenuExt.EnumerableSlider<string>(Dialog.Clean("VIDDIES_TOOLBOX_OTHER_DEMO_LINEUP_TECH"), techList, DemoLineupSelectedTech) {
                 OnValueChange = (v) => {
                     DemoLineupSelectedTech = v;
                 },
